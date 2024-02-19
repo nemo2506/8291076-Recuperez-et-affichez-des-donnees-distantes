@@ -1,6 +1,7 @@
 package com.openclassrooms.stellarforecast
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -16,11 +17,11 @@ import kotlinx.coroutines.launch
 
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), WeatherAdapter.OnItemClickListener {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: HomeViewModel by viewModels()
-    private val customAdapter = WeatherAdapter()
+    private val customAdapter = WeatherAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,5 +47,10 @@ class MainActivity : AppCompatActivity() {
         val layoutManager = LinearLayoutManager(applicationContext)
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = customAdapter
+    }
+
+    override fun onItemClick(item: WeatherReportModel) {
+        Toast.makeText(this, "Il fera ${item.temperatureCelsius}°C", Toast.LENGTH_SHORT)
+            .show()
     }
 }

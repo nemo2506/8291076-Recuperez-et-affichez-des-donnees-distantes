@@ -10,11 +10,16 @@ import com.openclassrooms.stellarforecast.domain.model.WeatherReportModel
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class WeatherAdapter :
+class WeatherAdapter(private val itemClickListener: OnItemClickListener) :
     ListAdapter<WeatherReportModel, WeatherAdapter.WeatherViewHolder>(DiffCallback) {
+
+    interface OnItemClickListener {
+        fun onItemClick(item: WeatherReportModel)
+    }
 
     class WeatherViewHolder(
         private val binding: ItemWeatherBinding,
+        private val itemClickListener: OnItemClickListener
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val dateFormatter = SimpleDateFormat("dd/MM - HH:mm", Locale.getDefault())
@@ -23,13 +28,16 @@ class WeatherAdapter :
             val formattedDate: String = dateFormatter.format(observation.date.time)
             binding.textViewDateTime.text = formattedDate
             binding.textViewStargazing.text = if (observation.isGoodForStargazing) "⭐️" else "☁️"
+            binding.root.setOnClickListener {
+                itemClickListener.onItemClick(observation)
+            }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeatherViewHolder {
         val itemView =
             ItemWeatherBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return WeatherViewHolder(itemView)
+        return WeatherViewHolder(itemView, itemClickListener)
     }
 
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
