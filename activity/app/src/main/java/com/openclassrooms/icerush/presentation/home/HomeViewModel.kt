@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
-
+import com.openclassrooms.icerush.data.repository.Result
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(private val dataRepository: SnowRepository) :
@@ -31,17 +31,35 @@ class HomeViewModel @Inject constructor(private val dataRepository: SnowReposito
         val latitude = 48.844304
         val longitude = 2.374377
         dataRepository.fetchForecastData(latitude, longitude).onEach { forecastUpdate ->
-            _uiState.update { currentState ->
-                currentState.copy(
-                    forecast = forecastUpdate,
-                )
+            when (forecastUpdate) {
+                is Result.Failure -> _uiState.update { currentState ->
+                    currentState.copy(
+                        isViewLoading = false,
+                        errorMessage = forecastUpdate.message
+                    )
+                }
+
+                Result.Loading -> _uiState.update { currentState ->
+                    currentState.copy(
+                        isViewLoading = true,
+                        errorMessage = null,
+                    )
+                }
+
+                is Result.Success -> _uiState.update { currentState ->
+                    currentState.copy(
+                        forecast = forecastUpdate.value,
+                        isViewLoading = false,
+                        errorMessage = null,
+                    )
+                }
             }
         }.launchIn(viewModelScope)
-
     }
 }
 
 data class HomeUiState(
     val forecast: List<SnowReportModel> = emptyList(),
+    val isViewLoading: Boolean = false,
+    val errorMessage: String? = null
 )
-
