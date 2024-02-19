@@ -67,6 +67,9 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
     implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
 
+    //Location
+    implementation("com.google.android.gms:play-services-location:18.0.0")
+
     // Testing Dependencies
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
