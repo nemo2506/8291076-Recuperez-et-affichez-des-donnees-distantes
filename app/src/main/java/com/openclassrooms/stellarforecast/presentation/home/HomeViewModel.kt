@@ -2,6 +2,7 @@ package com.openclassrooms.stellarforecast.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.openclassrooms.stellarforecast.data.repository.Result
 import com.openclassrooms.stellarforecast.data.repository.WeatherRepository
 import com.openclassrooms.stellarforecast.domain.model.WeatherReportModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -30,10 +31,28 @@ class HomeViewModel @Inject constructor(private val dataRepository: WeatherRepos
         val latitude = 48.844304
         val longitude = 2.374377
         dataRepository.fetchForecastData(latitude, longitude).onEach { forecastUpdate ->
-            _uiState.update { currentState ->
-                currentState.copy(
-                    forecast = forecastUpdate,
-                )
+            when (forecastUpdate) {
+                is Result.Failure -> _uiState.update { currentState ->
+                    currentState.copy(
+                        isViewLoading = false,
+                        errorMessage = forecastUpdate.message
+                    )
+                }
+
+                Result.Loading -> _uiState.update { currentState ->
+                    currentState.copy(
+                        isViewLoading = true,
+                        errorMessage = null,
+                    )
+                }
+
+                is Result.Success -> _uiState.update { currentState ->
+                    currentState.copy(
+                        forecast = forecastUpdate.value,
+                        isViewLoading = false,
+                        errorMessage = null,
+                    )
+                }
             }
         }.launchIn(viewModelScope)
     }
@@ -41,4 +60,6 @@ class HomeViewModel @Inject constructor(private val dataRepository: WeatherRepos
 
 data class HomeUiState(
     val forecast: List<WeatherReportModel> = emptyList(),
+    val isViewLoading: Boolean = false,
+    val errorMessage: String? = null
 )

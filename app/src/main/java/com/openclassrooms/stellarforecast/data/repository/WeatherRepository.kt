@@ -12,13 +12,17 @@ class WeatherRepository(private val dataService: WeatherClient) {
     private val API_KEY = "REPLACE WITH YOUR API KEY HERE"
 
 
-    fun fetchForecastData(lat: Double, lng: Double): Flow<List<WeatherReportModel>> = flow {
-        val result = dataService.getWeatherByPosition(lat, lng, API_KEY)
-        val model = result.body()?.toDomainModel() ?: throw Exception("Invalid data")
-
-
-        emit(model)
-    }.catch { error ->
-        Log.e("WeatherRepository", error.message ?: "")
-    }
+    fun fetchForecastData(lat: Double, lng: Double): Flow<Result<List<WeatherReportModel>>> =
+        flow {
+            emit(Result.Loading)
+            val result = dataService.getWeatherByPosition(
+                latitude = lat,
+                longitude = lng,
+                apiKey = API_KEY
+            )
+            val model = result.body()?.toDomainModel() ?: throw Exception("Invalid data")
+            emit(Result.Success(model))
+        }.catch { error ->
+            emit(Result.Failure(error.message))
+        }
 }

@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.openclassrooms.stellarforecast.databinding.ActivityMainBinding
 import com.openclassrooms.stellarforecast.domain.model.WeatherReportModel
 import com.openclassrooms.stellarforecast.presentation.home.HomeViewModel
@@ -34,6 +36,11 @@ class MainActivity : AppCompatActivity(), WeatherAdapter.OnItemClickListener {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect {
                     updateCurrentWeather(it.forecast)
+                    binding.progressBar.isVisible = it.isViewLoading
+                    if (it.errorMessage?.isNotBlank() == true) {
+                        Snackbar.make(binding.root, it.errorMessage, Snackbar.LENGTH_LONG)
+                            .show()
+                    }
                 }
             }
         }
