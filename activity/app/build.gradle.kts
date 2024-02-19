@@ -69,6 +69,9 @@ dependencies {
     //Location
     implementation("com.google.android.gms:play-services-location:18.0.0")
 
+    //Location
+    implementation("com.google.android.gms:play-services-location:18.0.0")
+
     // Testing Dependencies
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
