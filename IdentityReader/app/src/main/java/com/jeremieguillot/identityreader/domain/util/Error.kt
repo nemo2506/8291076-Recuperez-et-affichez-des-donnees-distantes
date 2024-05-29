@@ -1,3 +1,3 @@
-package com.plcoding.core.domain.util
+package com.jeremieguillot.identityreader.domain.util
 
 interface Error

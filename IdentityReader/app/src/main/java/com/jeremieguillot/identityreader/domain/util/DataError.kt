@@ -1,4 +1,4 @@
-package com.plcoding.core.domain.util
+package com.jeremieguillot.identityreader.domain.util
 
 sealed interface DataError: Error {
     enum class Network: DataError {
