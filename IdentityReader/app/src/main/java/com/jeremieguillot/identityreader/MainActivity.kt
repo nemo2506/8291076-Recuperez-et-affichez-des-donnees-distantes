@@ -12,12 +12,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.runtime.setValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.jeremieguillot.identityreader.core.domain.MRZ
 import com.jeremieguillot.identityreader.core.ui.theme.IdentityReaderTheme
 import com.jeremieguillot.identityreader.nfc.presentation.reader.NfcReaderScreen
+import com.jeremieguillot.identityreader.scan.presentation.ScanScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -45,33 +46,15 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             IdentityReaderTheme {
-                val mrz by remember { mutableStateOf(MRZ.FAKE) }
+                var mrz by remember { mutableStateOf<MRZ?>(null) }
 
-
-                NfcReaderScreen(mrz)
-                val haptic = LocalHapticFeedback.current
-//
-//                var mrz by remember { mutableStateOf<MRZ?>(null) }
-//                if (mrz != null) {
-//                    Box(modifier = Modifier.fillMaxSize()) {
-//                        LaunchedEffect(Unit) {
-//                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-//                        }
-//
-//                        Column(Modifier.align(Alignment.Center)) {
-//                            Text(text = mrz.toString())
-//                            Button(onClick = {
-//                                mrz = null
-//                            }, modifier = Modifier.padding(16.dp)) {
-//                                Text(text = "Retry")
-//                            }
-//                        }
-//                    }
-//                } else {
-//                    ScanScreen {
-//                        mrz = it
-//                    }
-//                }
+                if (mrz != null) {
+                    NfcReaderScreen(mrz!!)
+                } else {
+                    ScanScreen {
+                        mrz = it
+                    }
+                }
             }
         }
     }
