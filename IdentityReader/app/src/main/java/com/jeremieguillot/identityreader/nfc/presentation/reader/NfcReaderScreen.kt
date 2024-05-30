@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -38,9 +39,11 @@ import com.jeremieguillot.identityreader.R
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
 import com.jeremieguillot.identityreader.core.domain.MRZ
 import com.jeremieguillot.identityreader.core.domain.util.Result
+import com.jeremieguillot.identityreader.core.extension.toMRZFormat
 import com.jeremieguillot.identityreader.core.presentation.Destination
 import com.jeremieguillot.identityreader.nfc.data.NFCReader
 import com.jeremieguillot.identityreader.nfc.domain.NfcReaderStatus
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ModifyMRZDialog
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ReaderAnimation
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getDescription
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getTitle
@@ -50,17 +53,30 @@ import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getT
 @Composable
 fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
 
-    val context = LocalContext.current
-    var errorCounter by remember { mutableIntStateOf(0) }
+    var localMRZ by remember { mutableStateOf(mrz) }
 
-    val reader = remember { NFCReader(mrz) }
+    val context = LocalContext.current
+    val reader = remember(localMRZ) { NFCReader(localMRZ) }
     val status by reader.status.collectAsState(NfcReaderStatus.IDLE)
+    var errorCounter by remember { mutableIntStateOf(5) }
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        ModifyMRZDialog(
+            mrz = localMRZ,
+            onDismiss = { showDialog = false },
+            onSave = { documentNumber, dateOfBirth, dateOfExpiry ->
+                errorCounter = 0
+                localMRZ =
+                    MRZ(documentNumber, dateOfBirth.toMRZFormat(), dateOfExpiry.toMRZFormat())
+            })
+    }
 
     var identity by remember {
         mutableStateOf<IdentityDocument?>(null)
     }
     if (identity != null) {
-        AlertDialog(onDismissRequest = { identity = null }) {
+        BasicAlertDialog(onDismissRequest = { identity = null }) {
             Column(
                 modifier = Modifier
                     .background(MaterialTheme.colorScheme.background)
@@ -151,7 +167,7 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
                         }
                         OutlinedButton(
                             modifier = Modifier.weight(1f),
-                            onClick = { /*TODO*/ }) {
+                            onClick = { showDialog = true }) {
                             Text(text = stringResource(R.string.modifier))
                         }
                     }
