@@ -56,7 +56,7 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
     val context = LocalContext.current
     val reader = remember { NFCReader(mrz) }
     val status by reader.status.collectAsState(NfcReaderStatus.IDLE)
-    var errorCounter by remember { mutableIntStateOf(5) }
+    var errorCounter by remember { mutableIntStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
