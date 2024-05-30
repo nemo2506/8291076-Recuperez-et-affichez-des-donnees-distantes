@@ -14,12 +14,12 @@ fun Date.toMRZFormat(): String {
     return outputFormat.format(this)
 }
 
-fun String.fromYYMMDDtoLocaleDate(): String {
-    val formatter = SimpleDateFormat("yyMMdd", Locale.getDefault())
-    return formatter.format(this) ?: ""
+fun String.fromYYMMDDtoDate(): Date {
+    val sdf = SimpleDateFormat("yyMMdd", Locale.getDefault())
+    return sdf.parse(this) ?: Date()
 }
 
-fun String.toDate(): Date {
-    val sdf = SimpleDateFormat("yyMMdd", Locale.getDefault())
+fun String.fromDDMMYYYYtoDate(): Date {
+    val sdf = SimpleDateFormat("ddMMyyyy", Locale.getDefault())
     return sdf.parse(this) ?: Date()
 }

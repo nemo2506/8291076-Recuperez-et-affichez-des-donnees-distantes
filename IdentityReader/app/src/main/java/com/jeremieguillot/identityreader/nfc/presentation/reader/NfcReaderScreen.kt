@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -53,22 +52,22 @@ import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getT
 @Composable
 fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
 
-    var localMRZ by remember { mutableStateOf(mrz) }
 
     val context = LocalContext.current
-    val reader = remember(localMRZ) { NFCReader(localMRZ) }
+    val reader = remember { NFCReader(mrz) }
     val status by reader.status.collectAsState(NfcReaderStatus.IDLE)
     var errorCounter by remember { mutableIntStateOf(5) }
     var showDialog by remember { mutableStateOf(false) }
 
     if (showDialog) {
         ModifyMRZDialog(
-            mrz = localMRZ,
+            mrz = mrz,
             onDismiss = { showDialog = false },
             onSave = { documentNumber, dateOfBirth, dateOfExpiry ->
                 errorCounter = 0
-                localMRZ =
-                    MRZ(documentNumber, dateOfBirth.toMRZFormat(), dateOfExpiry.toMRZFormat())
+                val dateOfBirth1 = dateOfBirth.toMRZFormat()
+                val localMRZ = MRZ(documentNumber, dateOfBirth1, dateOfExpiry.toMRZFormat())
+                reader.update(localMRZ)
             })
     }
 
