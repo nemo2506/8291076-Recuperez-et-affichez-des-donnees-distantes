@@ -51,9 +51,11 @@ fun ScanScreen(onSuccess: (MRZ) -> Unit) {
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            CameraPreview(
-                controller = controller, modifier = Modifier.fillMaxSize()
-            )
+            OverlayScreen {
+                CameraPreview(
+                    controller = controller, modifier = Modifier.fillMaxSize()
+                )
+            }
         }
     }
 }

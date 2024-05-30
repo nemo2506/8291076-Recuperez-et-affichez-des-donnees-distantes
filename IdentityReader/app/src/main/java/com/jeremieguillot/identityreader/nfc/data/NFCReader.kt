@@ -14,8 +14,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.jmrtd.BACKey
-import org.jmrtd.BACKeySpec
 
 class NFCReader(private val mrz: MRZ, private val context: Context) {
 
@@ -47,8 +45,7 @@ class NFCReader(private val mrz: MRZ, private val context: Context) {
         scope.launch {
             _status.emit(NfcReaderStatus.CONNECTING)
         }
-        val bacKey: BACKeySpec = BACKey(mrz.documentNumber, mrz.dateOfBirth, mrz.dateOfExpiry)
-        val result = NFCDocument().startReadTask(IsoDep.get(tag), bacKey)
+        val result = NFCDocument().startReadTask(IsoDep.get(tag), mrz)
         scope.launch {
             when (result) {
                 is Result.Error -> _status.emit(NfcReaderStatus.ERROR)
