@@ -11,8 +11,8 @@ fun NfcReaderStatus.getTitle(): String {
         NfcReaderStatus.IDLE -> stringResource(id = R.string.nfc_title_idle)
         NfcReaderStatus.CONNECTING -> stringResource(id = R.string.nfc_title_connecting)
         NfcReaderStatus.CONNECTED -> stringResource(id = R.string.nfc_title_connected)
-        NfcReaderStatus.DISCONNECTED -> stringResource(id = R.string.nfc_title_disconnected)
         NfcReaderStatus.ERROR -> stringResource(id = R.string.nfc_title_error)
+        NfcReaderStatus.DISABLED -> stringResource(id = R.string.nfc_title_disabled)
     }
 }
 
@@ -22,7 +22,7 @@ fun NfcReaderStatus.getDescription(): String {
         NfcReaderStatus.IDLE -> stringResource(id = R.string.nfc_desc_idle)
         NfcReaderStatus.CONNECTING -> stringResource(id = R.string.nfc_desc_connecting)
         NfcReaderStatus.CONNECTED -> stringResource(id = R.string.nfc_desc_connected)
-        NfcReaderStatus.DISCONNECTED -> stringResource(id = R.string.nfc_desc_disconnected)
         NfcReaderStatus.ERROR -> stringResource(id = R.string.nfc_desc_error)
+        NfcReaderStatus.DISABLED -> stringResource(id = R.string.nfc_desc_disabled)
     }
 }

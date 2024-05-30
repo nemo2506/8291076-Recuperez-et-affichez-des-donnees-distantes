@@ -7,5 +7,6 @@ data class MRZ(
 ) {
     companion object {
         val EMPTY: MRZ = MRZ("", "", "")
+        val FAKE: MRZ = MRZ("23FC08455", "920819", "330606")
     }
 }

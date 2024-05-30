@@ -74,6 +74,11 @@ dependencies {
     //ML Kit
     implementation(libs.mlkit.text.recognition)
 
+    //Passport
+    implementation(libs.passport.analyzer)
+    implementation(libs.passport.spongycastle)
+    implementation(libs.passport.scuba)
+
     //Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
