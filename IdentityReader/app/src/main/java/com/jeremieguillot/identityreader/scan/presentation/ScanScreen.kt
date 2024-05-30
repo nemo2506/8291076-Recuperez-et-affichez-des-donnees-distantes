@@ -11,14 +11,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import com.jeremieguillot.identityreader.core.domain.MRZ
+import androidx.navigation.NavHostController
+import com.jeremieguillot.identityreader.core.presentation.Destination
 import com.jeremieguillot.identityreader.scan.data.MRZRecognitionOCR
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Failure
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Success
 import com.jeremieguillot.identityreader.scan.data.TextImageAnalyzer
 
 @Composable
-fun ScanScreen(onSuccess: (MRZ) -> Unit) {
+fun ScanScreen(navController: NavHostController) {
     val recognizer = remember { MRZRecognitionOCR() }
     val context = LocalContext.current
     val analyzer = remember {
@@ -29,7 +30,7 @@ fun ScanScreen(onSuccess: (MRZ) -> Unit) {
                 }
 
                 is Success -> {
-                    onSuccess(result.mrz)
+                    navController.navigate(Destination.ReaderScreen(result.mrz))
                 }
             }
         }

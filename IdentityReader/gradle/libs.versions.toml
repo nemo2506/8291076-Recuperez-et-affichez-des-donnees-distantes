@@ -13,6 +13,8 @@ mlkit = "16.0.0"
 jmrtd = "0.7.35"
 spongycastle = "1.58.0.0"
 scuba = "0.0.18"
+composeNavigation = "2.8.0-beta02"
+serialization = "1.6.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,8 +41,11 @@ mlkit-text-recognition = { group = "com.google.mlkit", name = "text-recognition"
 passport-analyzer = { group = "org.jmrtd", name = "jmrtd", version.ref = "jmrtd" }
 passport-spongycastle = { group = "com.madgag.spongycastle", name = "prov", version.ref = "spongycastle" }
 passport-scuba = { group = "net.sf.scuba", name = "scuba-sc-android", version.ref = "scuba" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 

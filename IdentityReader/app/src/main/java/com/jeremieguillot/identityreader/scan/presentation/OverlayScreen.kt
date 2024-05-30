@@ -24,8 +24,6 @@ fun OverlayScreen(
     cornerRadius: Float = 32f,
     dashLength: Float = 40f,
     gapLength: Float = 10f,
-    labelText: String = "Place your ID here",
-    labelTextSize: Float = 16f,
     content: @Composable () -> Unit,
 ) {
 
