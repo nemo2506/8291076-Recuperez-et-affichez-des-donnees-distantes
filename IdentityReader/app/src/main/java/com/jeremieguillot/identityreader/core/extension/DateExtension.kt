@@ -9,6 +9,11 @@ fun Date.toLocaleDateString(): String {
     return formatter.format(this)
 }
 
+fun Date.toLocaleDateStringSeparated(): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    return formatter.format(this)
+}
+
 fun Date.toMRZFormat(): String {
     val outputFormat = SimpleDateFormat("yyMMdd", Locale.getDefault())
     return outputFormat.format(this)

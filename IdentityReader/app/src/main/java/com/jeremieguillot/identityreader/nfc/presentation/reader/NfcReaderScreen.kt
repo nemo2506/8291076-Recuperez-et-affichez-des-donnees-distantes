@@ -42,6 +42,7 @@ import com.jeremieguillot.identityreader.core.extension.toMRZFormat
 import com.jeremieguillot.identityreader.core.presentation.Destination
 import com.jeremieguillot.identityreader.nfc.data.NFCReader
 import com.jeremieguillot.identityreader.nfc.domain.NfcReaderStatus
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.MRZCard
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ModifyMRZDialog
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ReaderAnimation
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getDescription
@@ -52,7 +53,7 @@ import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getT
 @Composable
 fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
 
-
+    var localMRZ by remember { mutableStateOf(mrz) }
     val context = LocalContext.current
     val reader = remember { NFCReader(mrz) }
     val status by reader.status.collectAsState(NfcReaderStatus.IDLE)
@@ -61,12 +62,12 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
 
     if (showDialog) {
         ModifyMRZDialog(
-            mrz = mrz,
+            mrz = localMRZ,
             onDismiss = { showDialog = false },
             onSave = { documentNumber, dateOfBirth, dateOfExpiry ->
                 errorCounter = 0
                 val dateOfBirth1 = dateOfBirth.toMRZFormat()
-                val localMRZ = MRZ(documentNumber, dateOfBirth1, dateOfExpiry.toMRZFormat())
+                localMRZ = MRZ(documentNumber, dateOfBirth1, dateOfExpiry.toMRZFormat())
                 reader.update(localMRZ)
             })
     }
@@ -133,12 +134,15 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
                 .padding(it)
                 .fillMaxSize()
         ) {
+
+            MRZCard(localMRZ, Modifier.align(Alignment.TopCenter))
+
             ReaderAnimation(status, Modifier.align(Alignment.Center))
 
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 160.dp, start = 16.dp, end = 16.dp),
+                    .padding(bottom = 80.dp, start = 16.dp, end = 16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {

@@ -23,6 +23,9 @@
     <string name="cancel">Annuler</string>
     <string name="confirm">Confirmer</string>
     <string name="select_date">Select Date</string>
+    <string name="document_number_dots">"Numéro de Document: "</string>
+    <string name="birthdate_dots">"Date de Naissance: "</string>
+    <string name="expiration_date_dots">"Date d'Expiration: "</string>
 
 
 </resources>
