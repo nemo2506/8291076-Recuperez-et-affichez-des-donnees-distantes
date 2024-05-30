@@ -1,4 +1,4 @@
-package com.jeremieguillot.identityreader.domain.util
+package com.jeremieguillot.identityreader.core.domain.util
 
 sealed interface DataError: Error {
     enum class Network: DataError {

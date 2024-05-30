@@ -1,4 +1,4 @@
-package com.jeremieguillot.identityreader.presentation
+package com.jeremieguillot.identityreader.scan.presentation
 
 import androidx.camera.view.LifecycleCameraController
 import androidx.camera.view.PreviewView
