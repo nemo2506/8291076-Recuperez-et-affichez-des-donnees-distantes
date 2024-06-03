@@ -2,8 +2,8 @@ package com.jeremieguillot.identityreader.nfc.data
 
 import android.nfc.tech.IsoDep
 import android.util.Log
+import com.jeremieguillot.identityreader.core.domain.DocumentType
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
-import com.jeremieguillot.identityreader.core.domain.IdentityDocumentType
 import com.jeremieguillot.identityreader.core.domain.MRZ
 import com.jeremieguillot.identityreader.core.domain.util.DataError
 import com.jeremieguillot.identityreader.core.domain.util.Error
@@ -57,7 +57,7 @@ class NFCDocument {
 
             return Result.Success(
                 IdentityDocument(
-                    type = IdentityDocumentType.PASSPORT,
+                    type = DocumentType.PASSPORT,
                     documentNumber = dg1File.mrzInfo.documentNumber,
                     firstName = dg1File.mrzInfo.primaryIdentifier,
                     lastName = dg1File.mrzInfo.secondaryIdentifier,

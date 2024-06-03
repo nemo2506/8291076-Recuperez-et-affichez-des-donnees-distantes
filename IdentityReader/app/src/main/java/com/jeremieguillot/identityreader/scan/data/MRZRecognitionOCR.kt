@@ -2,6 +2,8 @@ package com.jeremieguillot.identityreader.scan.data
 
 import com.google.mlkit.vision.text.Text
 import com.jeremieguillot.identityreader.core.domain.MRZ
+import com.jeremieguillot.identityreader.core.domain.util.DataError
+import com.jeremieguillot.identityreader.core.domain.util.Result
 import java.util.Locale
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -65,15 +67,26 @@ sealed class MRZResult {
 }
 
 class MRZRecognitionOCR {
+    private val documentTypeIdentifier = DocumentTypeIdentifier()
+
+
+    //TODO MOVE ALL OF THIS IN THE TYPE IDENTIFIER - from here
     private val DOCUMENT_NUMBER = "documentNumber"
     private val DIGIT_DOCUMENT_NUMBER = "checkDigitDocumentNumber"
     private val BIRTH_DATE = "dateOfBirth"
+    private val CHECK_BIRTH_DATE = "checkDigitDateOfBirth"
     private val EXPIRATION_DATE = "expirationDate"
+    private val CHECK_EXPIRATION_DATE = "checkDigitExpiration"
 
     private val REGEX_OLD_PASSPORT =
-        "(?<documentNumber>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<dateOfBirth>[0-9ILDSOG]{6})(?<checkDigitDateOfBirth>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<expirationDate>[0-9ILDSOG]{6})(?<checkDigitExpiration>[0-9ILDSOG]{1})"
-    private val REGEX_IP_PASSPORT_LINE_1 = "\\bIP[A-Z<]{3}[A-Z0-9<]{9}[0-9]{1}"
-    private val REGEX_IP_PASSPORT_LINE_2 = "[0-9]{6}[0-9]{1}[FM<]{1}[0-9]{6}[0-9]{1}[A-Z<]{3}"
+        "(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<$BIRTH_DATE>[0-9ILDSOG]{6})(?<$CHECK_BIRTH_DATE>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<$EXPIRATION_DATE>[0-9ILDSOG]{6})(?<$CHECK_EXPIRATION_DATE>[0-9ILDSOG]{1})"
+
+    private val REGEX_NEW_CARD_LINE_1 =
+        "ID[A-Z<]{3}(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
+    private val REGEX_NEW_CARD_LINE_2 =
+        "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<sex>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})"
+
+    //to here
 
     fun recognize(blocks: List<Text.TextBlock>): MRZResult {
         val fullRead = blocks.joinToString("-") { block ->
@@ -87,60 +100,65 @@ class MRZRecognitionOCR {
         }.uppercase(Locale.getDefault())
 
         val oldPassportMatcher = Pattern.compile(REGEX_OLD_PASSPORT).matcher(fullRead)
+        val newIdentityCard = Pattern.compile(REGEX_NEW_CARD_LINE_1).matcher(fullRead)
+        val newIdentityCard2 = Pattern.compile(REGEX_NEW_CARD_LINE_2).matcher(fullRead)
 
-        if (oldPassportMatcher.find()) {
-            return processOldPassport(oldPassportMatcher)
-        } else {
-            val ipPassportMatcherLine1 = Pattern.compile(REGEX_IP_PASSPORT_LINE_1).matcher(fullRead)
-            val ipPassportMatcherLine2 = Pattern.compile(REGEX_IP_PASSPORT_LINE_2).matcher(fullRead)
+        return when {
+            newIdentityCard.find() && newIdentityCard2.find() -> processIdentityCard(
+                newIdentityCard,
+                newIdentityCard2
+            )
 
-            return if (ipPassportMatcherLine1.find() && ipPassportMatcherLine2.find()) {
-                processIPPassport(ipPassportMatcherLine1, ipPassportMatcherLine2)
-            } else {
-                MRZResult.Failure
-            }
+            oldPassportMatcher.find() -> processPassport(oldPassportMatcher)
+            else -> MRZResult.Failure
         }
     }
 
-    // Function to process old passport format
-    private fun processOldPassport(matcher: Matcher): MRZResult {
-        val documentNumber = matcher.group(DOCUMENT_NUMBER)
-        val checkDigitDocumentNumber = cleanDigit(matcher.group(DIGIT_DOCUMENT_NUMBER)).toInt()
-        val dateOfBirth = cleanDigit(matcher.group(BIRTH_DATE))
-        val expirationDate = cleanDigit(matcher.group(EXPIRATION_DATE))
-
-        val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
-        return if (cleanDocumentNumber != null) {
-            val mrzInfo = MRZ(cleanDocumentNumber, dateOfBirth, expirationDate)
-            MRZResult.Success(mrzInfo)
-        } else {
-            MRZResult.Failure
-        }
+    private fun processPassport(matcher: Matcher): MRZResult {
+        return processDocument(
+            documentNumber = matcher.group(DOCUMENT_NUMBER),
+            checkDigitDocumentNumber = matcher.group(DIGIT_DOCUMENT_NUMBER),
+            dateOfBirth = matcher.group(BIRTH_DATE),
+            expirationDate = matcher.group(EXPIRATION_DATE)
+        )
     }
 
-    // Function to process IP passport format
-    private fun processIPPassport(
-        matcherLine1: Matcher,
-        matcherLine2: Matcher
+    private fun processIdentityCard(matcher1: Matcher, matcher2: Matcher): MRZResult {
+        return processDocument(
+            documentNumber = matcher1.group(DOCUMENT_NUMBER),
+            checkDigitDocumentNumber = matcher1.group(DIGIT_DOCUMENT_NUMBER),
+            dateOfBirth = matcher2.group(BIRTH_DATE),
+            expirationDate = matcher2.group(EXPIRATION_DATE)
+        )
+    }
+
+    private fun processDocument(
+        documentNumber: String,
+        checkDigitDocumentNumber: String,
+        dateOfBirth: String,
+        expirationDate: String
     ): MRZResult {
-        val line1 = matcherLine1.group(0)
-        val line2 = matcherLine2.group(0)
+        val result = cleanDocumentNumber(
+            documentNumber = documentNumber,
+            checkDigit = cleanDigit(checkDigitDocumentNumber).toInt()
+        )
 
-        val documentNumber = line1.substring(5, 14)
-        val checkDigitDocumentNumber = line1.substring(14, 15).toInt()
-        val dateOfBirth = line2.substring(0, 6)
-        val expirationDate = line2.substring(8, 14)
-
-        val cleanDocumentNumber = cleanDocumentNumber(documentNumber, checkDigitDocumentNumber)
-        return if (cleanDocumentNumber != null) {
-            val mrzInfo = MRZ(documentNumber, dateOfBirth, expirationDate)
-            MRZResult.Success(mrzInfo)
-        } else {
-            MRZResult.Failure
+        return when (result) {
+            is Result.Error -> MRZResult.Failure
+            is Result.Success -> MRZResult.Success(
+                MRZ(
+                    documentNumber = result.data,
+                    dateOfBirth = cleanDigit(dateOfBirth),
+                    dateOfExpiry = cleanDigit(expirationDate)
+                )
+            )
         }
     }
 
-    private fun cleanDocumentNumber(documentNumber: String, checkDigit: Int): String? {
+    private fun cleanDocumentNumber(
+        documentNumber: String,
+        checkDigit: Int
+    ): Result<String, DataError.Local> {
         // Replace all 'O' with '0'
         val tempDocumentNumber = documentNumber.replace("O", "0")
 
@@ -149,7 +167,7 @@ class MRZRecognitionOCR {
 
         // If check digits match, return the document number
         if (checkDigit == calculatedCheckDigit) {
-            return tempDocumentNumber
+            return Result.Success(tempDocumentNumber)
         }
 
         // Try replacing each '0' with 'O' one at a time to see if it matches the check digit
@@ -158,13 +176,13 @@ class MRZRecognitionOCR {
                 val modifiedDocumentNumber = tempDocumentNumber.replaceRange(index, index + 1, "O")
                 calculatedCheckDigit = checkDigit(modifiedDocumentNumber)
                 if (checkDigit == calculatedCheckDigit) {
-                    return modifiedDocumentNumber
+                    return Result.Success(modifiedDocumentNumber)
                 }
             }
         }
 
         // If no match is found, return null
-        return null
+        return Result.Error(DataError.Local.INVALID_DATA)
     }
 
     /**
@@ -211,14 +229,14 @@ class MRZRecognitionOCR {
      * So, the check digit for the passport number **L898902C3** is **6**.
      * This check digit is then placed at the next position of the passport number in the Machine Readable Zone (MRZ) to verify the integrity of the data during machine reading.
      */
-    private fun checkDigit(passportNumber: String): Int {
-        require(passportNumber.length == 9) { "Passport number must be 9 characters long" }
+    private fun checkDigit(documentNumber: String): Int {
+        require(documentNumber.length == 9) { "Document number must be 9 characters long" }
 
         val weights = intArrayOf(7, 3, 1)
         var sum = 0
 
-        for (i in passportNumber.indices) {
-            val char = passportNumber[i]
+        for (i in documentNumber.indices) {
+            val char = documentNumber[i]
             val value = if (char.isLetter()) {
                 // Convert letters to corresponding numerical values (A = 10, B = 11, ..., Z = 35)
                 char.uppercaseChar() - 'A' + 10
@@ -234,11 +252,14 @@ class MRZRecognitionOCR {
     }
 
     private fun cleanDigit(digit: String): String {
-        return digit.replace("I", "1")
-            .replace("L", "1")
-            .replace("D", "0")
-            .replace("S", "5")
-            .replace("O", "0")
-            .replace("G", "6")
+        return digit.map { char ->
+            when (char) {
+                'I', 'L' -> '1'
+                'D', 'O' -> '0'
+                'S' -> '5'
+                'G' -> '6'
+                else -> char
+            }
+        }.joinToString("")
     }
 }
