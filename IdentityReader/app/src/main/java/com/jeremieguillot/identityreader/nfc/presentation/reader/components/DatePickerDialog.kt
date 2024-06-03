@@ -58,10 +58,10 @@ fun ModifyMRZDialog(
 
 
     var localTextValueDateOfBirth by remember {
-        mutableStateOf(TextFieldValue(dateOfBirth.toLocaleDateString()))
+        mutableStateOf(TextFieldValue(dateOfBirth?.toLocaleDateString() ?: ""))
     }
     var localTextValueDateOfExpiry by remember {
-        mutableStateOf(TextFieldValue(dateOfExpiry.toLocaleDateString()))
+        mutableStateOf(TextFieldValue(dateOfExpiry?.toLocaleDateString() ?: ""))
     }
 
     Dialog(onDismissRequest = { onDismiss() }) {

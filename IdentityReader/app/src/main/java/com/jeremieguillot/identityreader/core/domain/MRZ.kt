@@ -10,4 +10,8 @@ data class MRZ(
     val documentNumber: String,
     val dateOfBirth: String,
     val dateOfExpiry: String
-) : Parcelable
+) : Parcelable {
+    companion object {
+        val EMPTY = MRZ("", "", "")
+    }
+}

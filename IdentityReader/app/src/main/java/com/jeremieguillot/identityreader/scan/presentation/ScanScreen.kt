@@ -2,17 +2,26 @@ package com.jeremieguillot.identityreader.scan.presentation
 
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.jeremieguillot.identityreader.core.domain.MRZ
+import com.jeremieguillot.identityreader.core.extension.toMRZFormat
 import com.jeremieguillot.identityreader.core.presentation.Destination
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ModifyMRZDialog
 import com.jeremieguillot.identityreader.scan.data.MRZRecognitionOCR
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Failure
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Success
@@ -20,6 +29,27 @@ import com.jeremieguillot.identityreader.scan.data.TextImageAnalyzer
 
 @Composable
 fun ScanScreen(navController: NavHostController) {
+
+    var fabVisible by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+
+    if (showDialog) {
+        ModifyMRZDialog(
+            mrz = MRZ.EMPTY,
+            onDismiss = { showDialog = false },
+            onSave = { documentNumber, dateOfBirth, dateOfExpiry ->
+                val dateOfBirth1 = dateOfBirth.toMRZFormat()
+                val mrz = MRZ(documentNumber, dateOfBirth1, dateOfExpiry.toMRZFormat())
+                navController.navigate(Destination.ReaderScreen(mrz))
+            })
+    }
+
+//    LaunchedEffect(Unit) {
+//        delay(5000)
+//        fabVisible = true
+//    }
+
+
     val recognizer = remember { MRZRecognitionOCR() }
     val context = LocalContext.current
     val analyzer = remember {
@@ -46,17 +76,23 @@ fun ScanScreen(navController: NavHostController) {
         }
     }
 
-    Scaffold { padding ->
-        Box(
-            modifier = Modifier
+    Scaffold(floatingActionButton = {
+        if (fabVisible) {
+            FloatingActionButton(
+                onClick = { showDialog = true },
+            ) {
+                Icon(Icons.Filled.Edit, null)
+            }
+        }
+    }) { padding ->
+        OverlayScreen(
+            Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            OverlayScreen {
-                CameraPreview(
-                    controller = controller, modifier = Modifier.fillMaxSize()
-                )
-            }
+            CameraPreview(
+                controller = controller, modifier = Modifier.fillMaxSize()
+            )
         }
     }
 }

@@ -45,13 +45,13 @@ fun MRZCard(mrz: MRZ, modifier: Modifier = Modifier) {
             Text(
                 annotatedString(
                     stringResource(R.string.birthdate_dots),
-                    mrz.dateOfBirth.fromYYMMDDtoDate().toLocaleDateStringSeparated()
+                    mrz.dateOfBirth.fromYYMMDDtoDate()?.toLocaleDateStringSeparated() ?: ""
                 )
             )
             Text(
                 annotatedString(
                     stringResource(R.string.expiration_date_dots),
-                    mrz.dateOfExpiry.fromYYMMDDtoDate().toLocaleDateStringSeparated()
+                    mrz.dateOfExpiry.fromYYMMDDtoDate()?.toLocaleDateStringSeparated() ?: ""
                 )
             )
         }
