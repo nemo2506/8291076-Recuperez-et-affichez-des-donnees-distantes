@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.jeremieguillot.identityreader"
+    namespace = "com.jeremieguillot.example"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.jeremieguillot.identityreader"
+        applicationId = "com.jeremieguillot.example"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -65,28 +65,5 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3.android)
 
-    //Camera
-    implementation(libs.androidx.camera.view)
-    implementation(libs.androidx.camera.core)
-    implementation(libs.androidx.camera.lifecycle)
-    implementation(libs.androidx.camera.camera2)
-    implementation(libs.androidx.camera.video)
-    implementation(libs.androidx.camera.extensions)
-
-    //ML Kit
-    implementation(libs.mlkit.text.recognition)
-
-    //Passport
-    implementation(libs.passport.analyzer)
-    implementation(libs.passport.spongycastle)
-    implementation(libs.passport.scuba)
-
-    //Test
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(project(":identityreader"))
 }
