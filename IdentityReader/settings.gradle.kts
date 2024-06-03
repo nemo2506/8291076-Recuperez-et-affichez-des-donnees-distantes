@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "IdentityReader"
 include(":app")
- 
+include(":identityreader")
