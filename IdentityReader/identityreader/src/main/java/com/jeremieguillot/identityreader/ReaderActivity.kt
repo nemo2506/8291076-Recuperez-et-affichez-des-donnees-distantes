@@ -26,7 +26,7 @@ import com.jeremieguillot.identityreader.nfc.presentation.reader.NfcReaderScreen
 import com.jeremieguillot.identityreader.scan.presentation.ScanScreen
 import kotlin.reflect.typeOf
 
-class MainActivity : ComponentActivity() {
+class ReaderActivity : ComponentActivity() {
 
     private var nfcAdapter: NfcAdapter? = null
 

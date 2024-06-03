@@ -1,8 +1,6 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    alias(libs.plugins.kotlin.serialization)
-    id("kotlin-parcelize") // needed only for non-primitive classes
 }
 
 android {

@@ -81,7 +81,7 @@ class NFCDocument {
     }
 
     private fun doPace(service: PassportService, bacKey: BACKeySpec): Boolean = runCatching {
-        CardAccessFile(service.getInputStream(PassportService.EF_CARD_ACCESS))
+        CardAccessFile(service.getInputStream(PassportService.EF_CARD_SECURITY))
             .securityInfos
             .filterIsInstance<PACEInfo>()
             .forEach {

@@ -24,7 +24,7 @@
         android:theme="@style/Theme.IdentityReader"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name="com.jeremieguillot.example.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.IdentityReader">
             <intent-filter>

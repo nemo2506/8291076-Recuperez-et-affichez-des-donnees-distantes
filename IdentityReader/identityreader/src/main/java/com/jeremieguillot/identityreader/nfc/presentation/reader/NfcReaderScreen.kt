@@ -33,7 +33,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.util.Consumer
 import androidx.navigation.NavHostController
-import com.jeremieguillot.identityreader.MainActivity
 import com.jeremieguillot.identityreader.R
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
 import com.jeremieguillot.identityreader.core.domain.MRZ
@@ -122,7 +121,9 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
             }
 
         }
-        (context as MainActivity).addOnNewIntentListener(listener)
+        (context as com.jeremieguillot.identityreader.ReaderActivity).addOnNewIntentListener(
+            listener
+        )
         onDispose { context.removeOnNewIntentListener(listener) }
     }
 
