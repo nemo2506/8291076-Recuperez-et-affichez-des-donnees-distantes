@@ -18,7 +18,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.jeremieguillot.identityreader.core.domain.MRZ
+import com.jeremieguillot.identityreader.core.domain.DataDocument
 import com.jeremieguillot.identityreader.core.presentation.CustomNavType
 import com.jeremieguillot.identityreader.core.presentation.Destination
 import com.jeremieguillot.identityreader.core.ui.theme.IdentityReaderTheme
@@ -51,11 +51,14 @@ class ReaderActivity : ComponentActivity() {
                     }
                     composable<Destination.ReaderScreen>(
                         typeMap = mapOf(
-                            typeOf<MRZ>() to CustomNavType(MRZ::class.java, MRZ.serializer())
+                            typeOf<DataDocument>() to CustomNavType(
+                                DataDocument::class.java,
+                                DataDocument.serializer()
+                            )
                         )
                     ) {
                         val args = it.toRoute<Destination.ReaderScreen>()
-                        NfcReaderScreen(navController, args.mrz)
+                        NfcReaderScreen(navController, args.dataDocument)
                     }
                 }
             }

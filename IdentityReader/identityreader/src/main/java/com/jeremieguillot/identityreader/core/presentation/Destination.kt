@@ -1,6 +1,6 @@
 package com.jeremieguillot.identityreader.core.presentation
 
-import com.jeremieguillot.identityreader.core.domain.MRZ
+import com.jeremieguillot.identityreader.core.domain.DataDocument
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -10,5 +10,5 @@ sealed class Destination {
     data object ScannerScreen : Destination()
 
     @Serializable
-    data class ReaderScreen(val mrz: MRZ) : Destination()
+    data class ReaderScreen(val dataDocument: DataDocument) : Destination()
 }

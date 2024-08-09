@@ -50,7 +50,7 @@ fun ScanScreen(navController: NavHostController) {
                 }
 
                 is Success -> {
-                    navController.navigate(Destination.ReaderScreen(result.mrz))
+                    navController.navigate(Destination.ReaderScreen(result.data))
                 }
             }
         }

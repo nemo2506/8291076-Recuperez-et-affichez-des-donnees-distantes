@@ -2,6 +2,7 @@ package com.jeremieguillot.identityreader.nfc.data
 
 import android.nfc.Tag
 import android.nfc.tech.IsoDep
+import com.jeremieguillot.identityreader.core.domain.DataDocument
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
 import com.jeremieguillot.identityreader.core.domain.MRZ
 import com.jeremieguillot.identityreader.core.domain.util.Error
@@ -13,8 +14,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 
-class NFCReader(private var mrz: MRZ) {
+class NFCReader(dataDocument: DataDocument) {
 
+    private var mrz: MRZ = MRZ(
+        dataDocument.documentNumber,
+        dataDocument.dateOfBirth,
+        dataDocument.dateOfExpiry
+    )
     private val scope = CoroutineScope(Dispatchers.Main)
 
     private val _status: MutableStateFlow<NfcReaderStatus> = MutableStateFlow(NfcReaderStatus.IDLE)

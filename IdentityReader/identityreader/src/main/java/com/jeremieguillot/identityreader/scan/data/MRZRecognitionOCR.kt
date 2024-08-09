@@ -1,7 +1,7 @@
 package com.jeremieguillot.identityreader.scan.data
 
 import com.google.mlkit.vision.text.Text
-import com.jeremieguillot.identityreader.core.domain.MRZ
+import com.jeremieguillot.identityreader.core.domain.DataDocument
 import com.jeremieguillot.identityreader.core.domain.util.DataError
 import com.jeremieguillot.identityreader.core.domain.util.Result
 import java.util.Locale
@@ -62,7 +62,7 @@ import java.util.regex.Pattern
  * 12. **<<<<<<<<<<<<<<00**: Personal identifier and overall check character
  */
 sealed class MRZResult {
-    data class Success(val mrz: MRZ) : MRZResult()
+    data class Success(val data: DataDocument) : MRZResult()
     data object Failure : MRZResult()
 }
 
@@ -76,15 +76,19 @@ class MRZRecognitionOCR {
     private val BIRTH_DATE = "dateOfBirth"
     private val CHECK_BIRTH_DATE = "checkDigitDateOfBirth"
     private val EXPIRATION_DATE = "expirationDate"
-    private val CHECK_EXPIRATION_DATE = "checkDigitExpiration"
+    private val CHECK_EXPIRATION_DATE = "checkDigitExpirationDate"
+    private val SEX = "sex"
+    private val ISSUING_COUNTRY = "issuingCountry"
+    private val PERSONAL_IDENTIFIER = "personalIdentifier"
+    private val LAST_NAME = "lastName"
 
     private val REGEX_OLD_PASSPORT =
-        "(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<$BIRTH_DATE>[0-9ILDSOG]{6})(?<$CHECK_BIRTH_DATE>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<$EXPIRATION_DATE>[0-9ILDSOG]{6})(?<$CHECK_EXPIRATION_DATE>[0-9ILDSOG]{1})"
+        "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DIGIT_DOCUMENT_NUMBER>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<$BIRTH_DATE>[0-9ILDSOG]{6})(?<$CHECK_BIRTH_DATE>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<$EXPIRATION_DATE>[0-9ILDSOG]{6})(?<$CHECK_EXPIRATION_DATE>[0-9ILDSOG]{1})"
 
     private val REGEX_NEW_CARD_LINE_1 =
-        "ID[A-Z<]{3}(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<checkDigitDocumentNumber>[0-9]{1})"
+        "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9]{1})"
     private val REGEX_NEW_CARD_LINE_2 =
-        "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<sex>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})"
+        "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<$SEX>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})"
 
     //to here
 
@@ -116,26 +120,32 @@ class MRZRecognitionOCR {
 
     private fun processPassport(matcher: Matcher): MRZResult {
         return processDocument(
+            issuingCountry = "", //TODO
             documentNumber = matcher.group(DOCUMENT_NUMBER),
             checkDigitDocumentNumber = matcher.group(DIGIT_DOCUMENT_NUMBER),
             dateOfBirth = matcher.group(BIRTH_DATE),
+            sex = "", //TODO
             expirationDate = matcher.group(EXPIRATION_DATE)
         )
     }
 
     private fun processIdentityCard(matcher1: Matcher, matcher2: Matcher): MRZResult {
         return processDocument(
+            issuingCountry = matcher1.group(ISSUING_COUNTRY),
             documentNumber = matcher1.group(DOCUMENT_NUMBER),
             checkDigitDocumentNumber = matcher1.group(DIGIT_DOCUMENT_NUMBER),
             dateOfBirth = matcher2.group(BIRTH_DATE),
+            sex = matcher2.group(SEX),
             expirationDate = matcher2.group(EXPIRATION_DATE)
         )
     }
 
     private fun processDocument(
+        issuingCountry: String,
         documentNumber: String,
         checkDigitDocumentNumber: String,
         dateOfBirth: String,
+        sex: String,
         expirationDate: String
     ): MRZResult {
         val result = cleanDocumentNumber(
@@ -146,10 +156,12 @@ class MRZRecognitionOCR {
         return when (result) {
             is Result.Error -> MRZResult.Failure
             is Result.Success -> MRZResult.Success(
-                MRZ(
+                DataDocument(
+                    issuingCountry = issuingCountry,
                     documentNumber = result.data,
                     dateOfBirth = cleanDigit(dateOfBirth),
-                    dateOfExpiry = cleanDigit(expirationDate)
+                    dateOfExpiry = cleanDigit(expirationDate),
+                    sex = sex
                 )
             )
         }

@@ -72,6 +72,7 @@ class NFCDocument {
                     city = dg11File.permanentAddress[2],
                     postalCode = dg11File.permanentAddress[1],
                     country = dg11File.permanentAddress[4],
+                    placeOfBirth = ""
 //                birthDate = dg1File.mrzInfo.birthDate,
 //                expirationDate = dg1File.mrzInfo.expirationDate
                 )
