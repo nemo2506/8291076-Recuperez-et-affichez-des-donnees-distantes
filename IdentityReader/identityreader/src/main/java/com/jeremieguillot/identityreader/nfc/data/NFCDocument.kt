@@ -17,6 +17,7 @@ import org.jmrtd.lds.PACEInfo
 import org.jmrtd.lds.icao.DG11File
 import org.jmrtd.lds.icao.DG1File
 
+
 class NFCDocument {
 
     fun startReadTask(isoDep: IsoDep, mrz: MRZ): Result<IdentityDocument, Error> {
@@ -30,13 +31,17 @@ class NFCDocument {
     ): Result<IdentityDocument, Error> {
 
         try {
-            isoDep.timeout = 10000
+            isoDep.timeout = 15_000
             val cardService = CardService.getInstance(isoDep).apply { open() }
             val service = PassportService(
-                cardService,
+                /* service = */ cardService,
+                /* maxTranceiveLengthForSecureMessaging = */
                 PassportService.NORMAL_MAX_TRANCEIVE_LENGTH,
+                /* maxBlockSize = */
                 PassportService.DEFAULT_MAX_BLOCKSIZE,
+                /* isSFIEnabled = */
                 false,
+                /* shouldCheckMAC = */
                 false
             ).apply { open() }
 
@@ -49,10 +54,8 @@ class NFCDocument {
                 service.doBAC(bacKey)
             }
 
-            val dg1File =
-                DG1File(service.getInputStream(PassportService.EF_DG1))
-            val dg11File =
-                DG11File(service.getInputStream(PassportService.EF_DG11))
+            val dg1File = DG1File(service.getInputStream(PassportService.EF_DG1))
+            val dg11File = DG11File(service.getInputStream(PassportService.EF_DG11))
 
 
             return Result.Success(
@@ -81,7 +84,11 @@ class NFCDocument {
     }
 
     private fun doPace(service: PassportService, bacKey: BACKeySpec): Boolean = runCatching {
-        CardAccessFile(service.getInputStream(PassportService.EF_CARD_SECURITY))
+        val inputStream = service.getInputStream(
+            PassportService.EF_CARD_SECURITY,
+            PassportService.DEFAULT_MAX_BLOCKSIZE
+        )
+        CardAccessFile(inputStream)
             .securityInfos
             .filterIsInstance<PACEInfo>()
             .forEach {

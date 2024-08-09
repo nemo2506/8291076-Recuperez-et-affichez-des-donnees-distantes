@@ -3,6 +3,7 @@ package com.jeremieguillot.identityreader.nfc.presentation.reader
 import android.content.Intent
 import android.nfc.NfcAdapter
 import android.nfc.Tag
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -110,14 +111,19 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
 
     DisposableEffect(Unit) {
         val listener = Consumer<Intent> { intent ->
+//            val tag = intent.extras!!.getParcelable<Tag>(NfcAdapter.EXTRA_TAG)
             val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
-            identity = when (val result = reader.onTagDiscovered(tag)) {
-                is Result.Error -> {
-                    errorCounter++
-                    null
-                }
+            if (tag!!.techList.contains("android.nfc.tech.IsoDep")) {
+                identity = when (val result = reader.onTagDiscovered(tag)) {
+                    is Result.Error -> {
+                        errorCounter++
+                        null
+                    }
 
-                is Result.Success -> result.data
+                    is Result.Success -> result.data
+                }
+            } else {
+                Log.e("ERROR", "Error isoDep")
             }
 
         }
@@ -148,8 +154,7 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    status.getTitle(),
-                    style = MaterialTheme.typography.titleLarge
+                    status.getTitle(), style = MaterialTheme.typography.titleLarge
                 )
                 Text(status.getDescription(), textAlign = TextAlign.Center)
 
@@ -158,15 +163,13 @@ fun NfcReaderScreen(navController: NavHostController, mrz: MRZ) {
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        OutlinedButton(
-                            modifier = Modifier.weight(1f),
-                            onClick = {
-                                navController.navigate(Destination.ScannerScreen) {
-                                    popUpTo(
-                                        Destination.ScannerScreen
-                                    ) { inclusive = true }
-                                }
-                            }) {
+                        OutlinedButton(modifier = Modifier.weight(1f), onClick = {
+                            navController.navigate(Destination.ScannerScreen) {
+                                popUpTo(
+                                    Destination.ScannerScreen
+                                ) { inclusive = true }
+                            }
+                        }) {
                             Text(text = stringResource(R.string.rescan))
                         }
                         OutlinedButton(

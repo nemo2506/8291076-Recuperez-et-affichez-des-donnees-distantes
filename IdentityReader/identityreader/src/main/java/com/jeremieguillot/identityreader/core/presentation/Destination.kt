@@ -11,5 +11,4 @@ sealed class Destination {
 
     @Serializable
     data class ReaderScreen(val mrz: MRZ) : Destination()
-
 }

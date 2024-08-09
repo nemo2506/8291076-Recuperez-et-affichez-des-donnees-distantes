@@ -43,7 +43,8 @@ class ReaderActivity : ComponentActivity() {
             IdentityReaderTheme {
                 val navController = rememberNavController()
                 NavHost(
-                    navController = navController, startDestination = Destination.ScannerScreen
+                    navController = navController,
+                    startDestination = Destination.ScannerScreen
                 ) {
                     composable<Destination.ScannerScreen> {
                         ScanScreen(navController)

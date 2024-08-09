@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
+
 class NFCReader(private var mrz: MRZ) {
 
     private val scope = CoroutineScope(Dispatchers.Main)
@@ -23,6 +24,7 @@ class NFCReader(private var mrz: MRZ) {
         mrz = newMRZ
         reset()
     }
+
     fun reset() {
         scope.launch {
             _status.emit(NfcReaderStatus.IDLE)
