@@ -9,11 +9,12 @@ import kotlinx.serialization.Serializable
 data class DataDocument(
     val issuingCountry: String,
     val documentNumber: String,
+    val lastName: String,
     val dateOfBirth: String,
     val dateOfExpiry: String,
     val sex: String
 ) : Parcelable {
     companion object {
-        val EMPTY = DataDocument("", "", "", "", "")
+        val EMPTY = DataDocument("", "", "", "", "", "")
     }
 }

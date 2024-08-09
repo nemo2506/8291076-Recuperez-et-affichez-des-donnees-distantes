@@ -81,6 +81,7 @@ class MRZRecognitionOCR {
     private val ISSUING_COUNTRY = "issuingCountry"
     private val PERSONAL_IDENTIFIER = "personalIdentifier"
     private val LAST_NAME = "lastName"
+    private val FIRST_NAME = "firstName" //not used on purpose,impossible to get full first name
 
     private val REGEX_OLD_PASSPORT =
         "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DIGIT_DOCUMENT_NUMBER>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<$BIRTH_DATE>[0-9ILDSOG]{6})(?<$CHECK_BIRTH_DATE>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<$EXPIRATION_DATE>[0-9ILDSOG]{6})(?<$CHECK_EXPIRATION_DATE>[0-9ILDSOG]{1})"
@@ -89,6 +90,9 @@ class MRZRecognitionOCR {
         "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9]{1})"
     private val REGEX_NEW_CARD_LINE_2 =
         "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<$SEX>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})"
+
+    //    private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>^[A-Z]+)<<(?<$FIRST_NAME>[A-Z]+)"
+    private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>[A-Z]{2,})<<([A-Z]+)"
 
     //to here
 
@@ -106,11 +110,13 @@ class MRZRecognitionOCR {
         val oldPassportMatcher = Pattern.compile(REGEX_OLD_PASSPORT).matcher(fullRead)
         val newIdentityCard = Pattern.compile(REGEX_NEW_CARD_LINE_1).matcher(fullRead)
         val newIdentityCard2 = Pattern.compile(REGEX_NEW_CARD_LINE_2).matcher(fullRead)
+        val newIdentityCard3 = Pattern.compile(REGEX_NEW_CARD_LINE_3).matcher(fullRead)
 
         return when {
-            newIdentityCard.find() && newIdentityCard2.find() -> processIdentityCard(
+            newIdentityCard.find() && newIdentityCard2.find() && newIdentityCard3.find() -> processIdentityCard(
                 newIdentityCard,
-                newIdentityCard2
+                newIdentityCard2,
+                newIdentityCard3
             )
 
             oldPassportMatcher.find() -> processPassport(oldPassportMatcher)
@@ -125,15 +131,21 @@ class MRZRecognitionOCR {
             checkDigitDocumentNumber = matcher.group(DIGIT_DOCUMENT_NUMBER),
             dateOfBirth = matcher.group(BIRTH_DATE),
             sex = "", //TODO
+            lastName = "", //TODO
             expirationDate = matcher.group(EXPIRATION_DATE)
         )
     }
 
-    private fun processIdentityCard(matcher1: Matcher, matcher2: Matcher): MRZResult {
+    private fun processIdentityCard(
+        matcher1: Matcher,
+        matcher2: Matcher,
+        matcher3: Matcher
+    ): MRZResult {
         return processDocument(
             issuingCountry = matcher1.group(ISSUING_COUNTRY),
             documentNumber = matcher1.group(DOCUMENT_NUMBER),
             checkDigitDocumentNumber = matcher1.group(DIGIT_DOCUMENT_NUMBER),
+            lastName = matcher3.group(LAST_NAME),
             dateOfBirth = matcher2.group(BIRTH_DATE),
             sex = matcher2.group(SEX),
             expirationDate = matcher2.group(EXPIRATION_DATE)
@@ -143,6 +155,7 @@ class MRZRecognitionOCR {
     private fun processDocument(
         issuingCountry: String,
         documentNumber: String,
+        lastName: String,
         checkDigitDocumentNumber: String,
         dateOfBirth: String,
         sex: String,
@@ -159,6 +172,7 @@ class MRZRecognitionOCR {
                 DataDocument(
                     issuingCountry = issuingCountry,
                     documentNumber = result.data,
+                    lastName = cleanCharacter(lastName),
                     dateOfBirth = cleanDigit(dateOfBirth),
                     dateOfExpiry = cleanDigit(expirationDate),
                     sex = sex
@@ -271,6 +285,18 @@ class MRZRecognitionOCR {
                 'S' -> '5'
                 'G' -> '6'
                 else -> char
+            }
+        }.joinToString("")
+    }
+
+    private fun cleanCharacter(digit: String): String {
+        return digit.map { char ->
+            when (char) {
+                '1' -> "I"
+                '0' -> "O"
+                '5' -> "S"
+                '6' -> "G"
+                else -> char.toString() // If the character is not a digit, keep it unchanged
             }
         }.joinToString("")
     }

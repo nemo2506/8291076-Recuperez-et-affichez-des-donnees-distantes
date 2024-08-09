@@ -69,6 +69,7 @@ fun FlipCard(
 @Composable
 fun FlippableCard(
     modifier: Modifier = Modifier,
+    cardModifier: Modifier = Modifier,
     identityDocument: IdentityDocument
 ) {
     var cardFace by remember {
@@ -76,13 +77,14 @@ fun FlippableCard(
     }
 
     FlipCard(
+        modifier = modifier,
         cardFace = cardFace,
         onClick = { cardFace = cardFace.next },
         front = {
-            FrontIdentityCard(modifier, identityDocument)
+            FrontIdentityCard(cardModifier, identityDocument)
         },
         back = {
-            BackIdentityCard(modifier, identityDocument)
+            BackIdentityCard(cardModifier, identityDocument)
         },
     )
 }

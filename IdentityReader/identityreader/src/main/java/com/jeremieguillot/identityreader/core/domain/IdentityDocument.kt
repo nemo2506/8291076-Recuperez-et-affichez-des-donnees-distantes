@@ -31,7 +31,7 @@ data class IdentityDocument(
                 type = DocumentType.ID_CARD, //TODO change
                 documentNumber = dataDocument.documentNumber,
                 origin = "",
-                lastName = "",
+                lastName = dataDocument.lastName,
                 firstName = "",
                 nationality = Locale("", dataDocument.issuingCountry).isO3Country,  // Missing data
                 gender = dataDocument.sex,
@@ -51,6 +51,7 @@ data class IdentityDocument(
 }
 
 fun Int.toHumanReadableHeight(): String {
+    if (this == 0) return ""
     val meters = this / 100
     val centimeters = this % 100
     return "${meters}m${centimeters}"
