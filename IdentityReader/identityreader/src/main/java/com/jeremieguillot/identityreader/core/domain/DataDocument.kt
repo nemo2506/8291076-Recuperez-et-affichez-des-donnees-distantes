@@ -7,14 +7,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Parcelize
 data class DataDocument(
+    val type: DocumentType,
     val issuingCountry: String,
     val documentNumber: String,
     val lastName: String,
+    val nationality: String,
     val dateOfBirth: String,
     val dateOfExpiry: String,
     val sex: String
-) : Parcelable {
-    companion object {
-        val EMPTY = DataDocument("", "", "", "", "", "")
-    }
-}
+) : Parcelable

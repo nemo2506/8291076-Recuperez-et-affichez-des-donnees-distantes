@@ -2,6 +2,7 @@ package com.jeremieguillot.identityreader.scan.data
 
 import com.google.mlkit.vision.text.Text
 import com.jeremieguillot.identityreader.core.domain.DataDocument
+import com.jeremieguillot.identityreader.core.domain.DocumentType
 import com.jeremieguillot.identityreader.core.domain.util.DataError
 import com.jeremieguillot.identityreader.core.domain.util.Result
 import java.util.Locale
@@ -79,6 +80,7 @@ class MRZRecognitionOCR {
     private val CHECK_EXPIRATION_DATE = "checkDigitExpirationDate"
     private val SEX = "sex"
     private val ISSUING_COUNTRY = "issuingCountry"
+    private val NATIONALITY = "nationality"
     private val PERSONAL_IDENTIFIER = "personalIdentifier"
     private val LAST_NAME = "lastName"
     private val FIRST_NAME = "firstName" //not used on purpose,impossible to get full first name
@@ -89,7 +91,7 @@ class MRZRecognitionOCR {
     private val REGEX_NEW_CARD_LINE_1 =
         "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9]{1})"
     private val REGEX_NEW_CARD_LINE_2 =
-        "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<$SEX>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})"
+        "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<$SEX>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})(?<$NATIONALITY>[A-Z<]{3})"
 
     //    private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>^[A-Z]+)<<(?<$FIRST_NAME>[A-Z]+)"
     private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>[A-Z]{2,})<<([A-Z]+)"
@@ -126,11 +128,13 @@ class MRZRecognitionOCR {
 
     private fun processPassport(matcher: Matcher): MRZResult {
         return processDocument(
+            type = DocumentType.PASSPORT,
             issuingCountry = "", //TODO
             documentNumber = matcher.group(DOCUMENT_NUMBER),
             checkDigitDocumentNumber = matcher.group(DIGIT_DOCUMENT_NUMBER),
             dateOfBirth = matcher.group(BIRTH_DATE),
             sex = "", //TODO
+            nationality = "", //TODO
             lastName = "", //TODO
             expirationDate = matcher.group(EXPIRATION_DATE)
         )
@@ -142,22 +146,26 @@ class MRZRecognitionOCR {
         matcher3: Matcher
     ): MRZResult {
         return processDocument(
+            type = DocumentType.ID_CARD,
             issuingCountry = matcher1.group(ISSUING_COUNTRY),
             documentNumber = matcher1.group(DOCUMENT_NUMBER),
             checkDigitDocumentNumber = matcher1.group(DIGIT_DOCUMENT_NUMBER),
             lastName = matcher3.group(LAST_NAME),
             dateOfBirth = matcher2.group(BIRTH_DATE),
+            nationality = matcher2.group(NATIONALITY),
             sex = matcher2.group(SEX),
             expirationDate = matcher2.group(EXPIRATION_DATE)
         )
     }
 
     private fun processDocument(
+        type: DocumentType,
         issuingCountry: String,
         documentNumber: String,
         lastName: String,
         checkDigitDocumentNumber: String,
         dateOfBirth: String,
+        nationality: String,
         sex: String,
         expirationDate: String
     ): MRZResult {
@@ -170,8 +178,10 @@ class MRZRecognitionOCR {
             is Result.Error -> MRZResult.Failure
             is Result.Success -> MRZResult.Success(
                 DataDocument(
+                    type = type,
                     issuingCountry = issuingCountry,
                     documentNumber = result.data,
+                    nationality = nationality,
                     lastName = cleanCharacter(lastName),
                     dateOfBirth = cleanDigit(dateOfBirth),
                     dateOfExpiry = cleanDigit(expirationDate),

@@ -41,9 +41,9 @@ import com.jeremieguillot.identityreader.core.presentation.Destination
 import com.jeremieguillot.identityreader.nfc.data.NFCReader
 import com.jeremieguillot.identityreader.nfc.domain.NfcReaderStatus
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ReaderAnimation
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.FlippableCard
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getDescription
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.getTitle
-import com.jeremieguillot.identityreader.nfc.presentation.reader.components.identitycard.FlippableCard
 
 
 @OptIn(ExperimentalMaterial3Api::class)

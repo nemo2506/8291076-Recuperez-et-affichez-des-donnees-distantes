@@ -10,7 +10,7 @@ data class IdentityDocument(
     val documentNumber: String = "",
     val expirationDate: String = "",
     val deliveryDate: String = "",
-    val origin: String = "",
+    val issuingIsO3Country: String = "",
     val size: Int = 0,
 
     val lastName: String = "",
@@ -30,10 +30,10 @@ data class IdentityDocument(
             return IdentityDocument(
                 type = DocumentType.ID_CARD, //TODO change
                 documentNumber = dataDocument.documentNumber,
-                origin = "",
+                issuingIsO3Country = Locale("", dataDocument.issuingCountry).isO3Country,
                 lastName = dataDocument.lastName,
-                firstName = "",
-                nationality = Locale("", dataDocument.issuingCountry).isO3Country,  // Missing data
+                firstName = "",// Missing data
+                nationality = Locale("", dataDocument.nationality).country,
                 gender = dataDocument.sex,
                 placeOfBirth = "",
                 birthDate = dataDocument.dateOfBirth.fromYYMMDDtoDate()
@@ -54,5 +54,5 @@ fun Int.toHumanReadableHeight(): String {
     if (this == 0) return ""
     val meters = this / 100
     val centimeters = this % 100
-    return "${meters}m${centimeters}"
+    return "${meters},${centimeters}m"
 }

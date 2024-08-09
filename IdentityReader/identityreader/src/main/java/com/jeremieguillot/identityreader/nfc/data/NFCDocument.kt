@@ -65,7 +65,7 @@ class NFCDocument {
                     firstName = dg1File.mrzInfo.primaryIdentifier,
                     lastName = dg1File.mrzInfo.secondaryIdentifier,
                     gender = dg1File.mrzInfo.gender.toString(),
-                    origin = dg1File.mrzInfo.issuingState,
+                    issuingIsO3Country = dg1File.mrzInfo.issuingState,
                     nationality = dg1File.mrzInfo.nationality,
                     address = dg11File.permanentAddress.first(),
                     addressNumber = "",

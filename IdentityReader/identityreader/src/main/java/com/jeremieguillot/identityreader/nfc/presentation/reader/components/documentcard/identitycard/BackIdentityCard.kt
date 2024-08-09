@@ -1,4 +1,4 @@
-package com.jeremieguillot.identityreader.nfc.presentation.reader.components.identitycard
+package com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,7 +38,7 @@ fun BackIdentityCard(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 IdentityField("TAILLE", identityDocument.size.toHumanReadableHeight())
-                IdentityField("DATE DE DELIVRANCE", identityDocument.expirationDate)
+                IdentityField("DATE DE DELIVRANCE", identityDocument.deliveryDate)
             }
             AddressField(
                 "Adresse",
@@ -92,7 +92,7 @@ fun BackCardPreview() {
     val document = IdentityDocument(
         type = DocumentType.ID_CARD,
         documentNumber = "13A000026",
-        origin = "FRA",
+        issuingIsO3Country = "FRA",
         lastName = "Doe",
         firstName = "John, Peter, Maxwell",
         nationality = "French",
@@ -118,7 +118,7 @@ fun BackCardPreviewWithMissingData() {
     val document = IdentityDocument(
         type = DocumentType.ID_CARD,
         documentNumber = "13A000026",
-        origin = "FRA",
+        issuingIsO3Country = "FRA",
         lastName = "Doe",
         firstName = "John, Peter, Maxwell, Alexander",
         nationality = "",  // Missing data

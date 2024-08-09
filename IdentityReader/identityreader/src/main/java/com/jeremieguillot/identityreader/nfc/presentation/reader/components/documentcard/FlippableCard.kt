@@ -1,4 +1,4 @@
-package com.jeremieguillot.identityreader.nfc.presentation.reader.components.identitycard
+package com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -12,7 +12,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import com.jeremieguillot.identityreader.core.domain.DocumentType
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard.BackIdentityCard
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard.FrontIdentityCard
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.passport.BackPassportCard
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.passport.PassportCard
 
 enum class CardFace(val angle: Float) {
     Front(0f) {
@@ -81,10 +86,16 @@ fun FlippableCard(
         cardFace = cardFace,
         onClick = { cardFace = cardFace.next },
         front = {
-            FrontIdentityCard(cardModifier, identityDocument)
+            when (identityDocument.type) {
+                DocumentType.PASSPORT -> PassportCard(cardModifier, identityDocument)
+                DocumentType.ID_CARD -> FrontIdentityCard(cardModifier, identityDocument)
+            }
         },
         back = {
-            BackIdentityCard(cardModifier, identityDocument)
+            when (identityDocument.type) {
+                DocumentType.PASSPORT -> BackPassportCard(cardModifier)
+                DocumentType.ID_CARD -> BackIdentityCard(cardModifier, identityDocument)
+            }
         },
     )
 }

@@ -1,4 +1,4 @@
-package com.jeremieguillot.identityreader.nfc.presentation.reader.components.identitycard
+package com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard
 
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -56,15 +56,26 @@ fun FrontIdentityCard(
                     letterSpacing = 2.sp,
                     color = Color(0xFF003399),
                 )
-                Image(
-                    painter = painterResource(id = R.drawable.europe_flag),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .align(
-                            Alignment.TopEnd
-                        )
-                        .height(20.dp)
-                )
+                Box(
+                    Modifier.align(
+                        Alignment.TopEnd
+                    )
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.europe_flag),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .height(23.dp)
+                    )
+                    Text(
+                        modifier = Modifier.align(Alignment.Center),
+                        text = identityDocument.issuingIsO3Country.uppercase().take(2),
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 10.sp,
+                    )
+                }
             }
             Row {
                 Icon(
@@ -210,10 +221,10 @@ fun IdentityCardPreview() {
     val document = IdentityDocument(
         type = DocumentType.ID_CARD,
         documentNumber = "13A000026",
-        origin = "FRA",
+        issuingIsO3Country = "FRA",
         lastName = "Doe",
         firstName = "John, Peter, Maxwell",
-        nationality = "French",
+        nationality = "Francaise",
         gender = "M",
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
@@ -236,7 +247,7 @@ fun IdentityCardPreviewWithMissingData() {
     val document = IdentityDocument(
         type = DocumentType.ID_CARD,
         documentNumber = "13A000026",
-        origin = "FRA",
+        issuingIsO3Country = "FRA",
         lastName = "Doe",
         firstName = "John, Peter, Maxwell, Alexander",
         nationality = "",  // Missing data

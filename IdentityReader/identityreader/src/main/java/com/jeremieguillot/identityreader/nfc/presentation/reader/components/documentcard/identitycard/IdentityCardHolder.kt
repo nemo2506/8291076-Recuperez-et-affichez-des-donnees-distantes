@@ -1,4 +1,4 @@
-package com.jeremieguillot.identityreader.nfc.presentation.reader.components.identitycard
+package com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard
 
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.aspectRatio
