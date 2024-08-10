@@ -28,7 +28,7 @@ data class IdentityDocument(
     companion object {
         fun fromDataDocument(dataDocument: DataDocument): IdentityDocument {
             return IdentityDocument(
-                type = DocumentType.ID_CARD, //TODO change
+                type = dataDocument.type,
                 documentNumber = dataDocument.documentNumber,
                 issuingIsO3Country = Locale("", dataDocument.issuingCountry).isO3Country,
                 lastName = dataDocument.lastName,

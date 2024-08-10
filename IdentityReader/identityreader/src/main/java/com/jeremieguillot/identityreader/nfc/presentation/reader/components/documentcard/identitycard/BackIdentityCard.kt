@@ -53,20 +53,20 @@ fun BackIdentityCard(
 }
 
 @Composable
-fun AddressField(label: String, value: List<String>) {
-    Column {
+fun AddressField(label: String, values: List<String>, modifier: Modifier = Modifier) {
+    Column(modifier = modifier) {
         IdentityFieldLabel(label)
-        if (value.any { it.isEmpty() }) {
+        if (values.any { it.isEmpty() }) {
             // Shimmer effect for loading state
             ShimmerBox(120)
             ShimmerBox(80)
             ShimmerBox(50)
         } else {
-            value.forEach {
-                val textUnit = 16.sp
+            values.forEachIndexed { index, s ->
+                val textUnit = if (index + 1 == values.size) 12.sp else 14.sp
                 Text(
                     lineHeight = textUnit,
-                    text = it,
+                    text = s,
                     fontWeight = FontWeight.W500,
                     color = Color.Black,
                     fontSize = textUnit

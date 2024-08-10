@@ -85,15 +85,16 @@ class MRZRecognitionOCR {
     private val LAST_NAME = "lastName"
     private val FIRST_NAME = "firstName" //not used on purpose,impossible to get full first name
 
+    private val REGEX_PASSPORT_FIRST_LINE =
+        "P<(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$LAST_NAME>[A-Z]{2,})<<([A-Z]+)"
     private val REGEX_OLD_PASSPORT =
-        "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DIGIT_DOCUMENT_NUMBER>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<$BIRTH_DATE>[0-9ILDSOG]{6})(?<$CHECK_BIRTH_DATE>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<$EXPIRATION_DATE>[0-9ILDSOG]{6})(?<$CHECK_EXPIRATION_DATE>[0-9ILDSOG]{1})"
+        "(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9ILDSOG]{1})(?<nationality>[A-Z<]{3})(?<$BIRTH_DATE>[0-9ILDSOG]{6})(?<$CHECK_BIRTH_DATE>[0-9ILDSOG]{1})(?<sex>[FM<]){1}(?<$EXPIRATION_DATE>[0-9ILDSOG]{6})(?<$CHECK_EXPIRATION_DATE>[0-9ILDSOG]{1})"
 
     private val REGEX_NEW_CARD_LINE_1 =
         "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9]{1})"
     private val REGEX_NEW_CARD_LINE_2 =
         "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<$SEX>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})(?<$NATIONALITY>[A-Z<]{3})"
 
-    //    private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>^[A-Z]+)<<(?<$FIRST_NAME>[A-Z]+)"
     private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>[A-Z]{2,})<<([A-Z]+)"
 
     //to here
@@ -110,6 +111,8 @@ class MRZRecognitionOCR {
         }.uppercase(Locale.getDefault())
 
         val oldPassportMatcher = Pattern.compile(REGEX_OLD_PASSPORT).matcher(fullRead)
+        val firstLinePassportMatcher = Pattern.compile(REGEX_PASSPORT_FIRST_LINE).matcher(fullRead)
+        //todo vu que le text fullRead est une ligne entiere, sans retour a la ligne, est ce qu'il faudrait pas avoir un seul regex ?
         val newIdentityCard = Pattern.compile(REGEX_NEW_CARD_LINE_1).matcher(fullRead)
         val newIdentityCard2 = Pattern.compile(REGEX_NEW_CARD_LINE_2).matcher(fullRead)
         val newIdentityCard3 = Pattern.compile(REGEX_NEW_CARD_LINE_3).matcher(fullRead)
@@ -121,22 +124,25 @@ class MRZRecognitionOCR {
                 newIdentityCard3
             )
 
-            oldPassportMatcher.find() -> processPassport(oldPassportMatcher)
+            oldPassportMatcher.find() && firstLinePassportMatcher.find() -> processPassport(
+                firstLinePassportMatcher,
+                oldPassportMatcher
+            )
             else -> MRZResult.Failure
         }
     }
 
-    private fun processPassport(matcher: Matcher): MRZResult {
+    private fun processPassport(matcher1: Matcher, matcher2: Matcher): MRZResult {
         return processDocument(
             type = DocumentType.PASSPORT,
-            issuingCountry = "", //TODO
-            documentNumber = matcher.group(DOCUMENT_NUMBER),
-            checkDigitDocumentNumber = matcher.group(DIGIT_DOCUMENT_NUMBER),
-            dateOfBirth = matcher.group(BIRTH_DATE),
-            sex = "", //TODO
-            nationality = "", //TODO
-            lastName = "", //TODO
-            expirationDate = matcher.group(EXPIRATION_DATE)
+            issuingCountry = matcher1.group(ISSUING_COUNTRY),
+            documentNumber = matcher2.group(DOCUMENT_NUMBER),
+            checkDigitDocumentNumber = matcher2.group(DIGIT_DOCUMENT_NUMBER),
+            dateOfBirth = matcher2.group(BIRTH_DATE),
+            sex = matcher2.group(SEX),
+            nationality = matcher2.group(NATIONALITY),
+            lastName = matcher1.group(LAST_NAME),
+            expirationDate = matcher2.group(EXPIRATION_DATE)
         )
     }
 

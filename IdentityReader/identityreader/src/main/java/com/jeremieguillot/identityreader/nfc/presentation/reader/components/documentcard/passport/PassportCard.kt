@@ -46,7 +46,7 @@ fun PassportCard(
             Row(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     modifier = Modifier.weight(3f),
-                    text = "Passport".uppercase(),
+                    text = "Passeport".uppercase(),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.ExtraBold,
                     letterSpacing = 2.sp,
@@ -121,7 +121,7 @@ fun PassportCard(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            IdentityField("DATE DE DELIVRANCE", identityDocument.expirationDate)
+                            IdentityField("DATE DE DELIVRANCE", identityDocument.deliveryDate)
                             IdentityField(
                                 "DATE D'EXPIR",
                                 identityDocument.expirationDate
@@ -134,7 +134,8 @@ fun PassportCard(
                                 "${identityDocument.addressNumber} ${identityDocument.address}",
                                 "${identityDocument.postalCode} ${identityDocument.city}",
                                 identityDocument.country
-                            )
+                            ),
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                     }
                 }
@@ -159,9 +160,9 @@ fun IdentityCardPreview() {
         expirationDate = "23/12/2045",
         placeOfBirth = "Strasbourg",
         addressNumber = "123",
-        address = "Main Street",
+        address = "Boulevard du General de Gaule",
         postalCode = "75001",
-        city = "Paris",
+        city = "Saint Romain en Provence",
         country = "France"
     )
 

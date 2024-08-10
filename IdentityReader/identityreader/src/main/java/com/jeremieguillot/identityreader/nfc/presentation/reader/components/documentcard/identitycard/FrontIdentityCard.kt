@@ -162,8 +162,8 @@ fun Modifier.shimmerEffect(): Modifier = composed {
 }
 
 @Composable
-fun IdentityField(label: String, value: String) {
-    Column {
+fun IdentityField(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier) {
         IdentityFieldLabel(label)
         if (value.isEmpty()) {
             // Shimmer effect for loading state
