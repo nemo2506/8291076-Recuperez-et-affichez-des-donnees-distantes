@@ -80,7 +80,6 @@ fun BackPassportCardPreview() {
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
         placeOfBirth = "Strasbourg",
-        addressNumber = "123",
         address = "Main Street",
         postalCode = "75001",
         city = "Paris",

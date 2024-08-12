@@ -1,6 +1,8 @@
 package com.jeremieguillot.identityreader.core.extension
 
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -10,8 +12,12 @@ fun Date.toLocaleDateString(): String {
 }
 
 fun Date.toLocaleDateStringSeparated(): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    return formatter.format(this)
+    try {
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return formatter.format(this)
+    } catch (e: Exception) {
+        return ""
+    }
 }
 
 fun Date.toMRZFormat(): String {
@@ -29,4 +35,21 @@ fun String.fromDDMMYYYYtoDate(): Date {
     if (isBlank()) return Date()
     val sdf = SimpleDateFormat("ddMMyyyy", Locale.getDefault())
     return sdf.parse(this) ?: Date()
+}
+
+fun String.toSlashStringDate(pattern: String, forceDateInPast: Boolean = false): String {
+    try {
+        val formatter = DateTimeFormatter.ofPattern(pattern)
+        var parsedDate = LocalDate.parse(this, formatter)
+
+        if (forceDateInPast) {
+            parsedDate = parsedDate.minusYears(100)
+        }
+
+
+        val outputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        return parsedDate.format(outputFormatter)
+    } catch (e: Exception) {
+        return ""
+    }
 }

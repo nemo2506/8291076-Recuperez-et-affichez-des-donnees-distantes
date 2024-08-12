@@ -93,8 +93,16 @@ fun FrontIdentityCard(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Name Row
-                    IdentityField("NOM", identityDocument.lastName.uppercase())
-                    IdentityField("Prénoms", identityDocument.firstName)
+                    IdentityField(
+                        "NOM",
+                        identityDocument.lastName.uppercase(),
+                        fontSize = IdentityFieldFontSize.LARGE
+                    )
+                    IdentityField(
+                        "Prénoms",
+                        identityDocument.firstName,
+                        fontSize = IdentityFieldFontSize.LARGE
+                    )
 
 
                     // Nationality, Gender, Birthdate Row
@@ -162,21 +170,25 @@ fun Modifier.shimmerEffect(): Modifier = composed {
 }
 
 @Composable
-fun IdentityField(label: String, value: String, modifier: Modifier = Modifier) {
-    Column(modifier) {
+fun IdentityField(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    fontSize: IdentityFieldFontSize = IdentityFieldFontSize.SMALL
+) {
+    Column(modifier.padding(top = 2.dp)) {
         IdentityFieldLabel(label)
         if (value.isEmpty()) {
             // Shimmer effect for loading state
             Text(
                 text = "Loading...",
                 color = Color.Transparent,
-//                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier
-                    .height(16.dp)
+                    .height(fontSize.size.dp)
                     .shimmerEffect()
             )
         } else {
-            val textUnit = 16.sp
+            val textUnit = fontSize.size.sp
             Text(
                 lineHeight = textUnit,
                 text = value,
@@ -186,6 +198,12 @@ fun IdentityField(label: String, value: String, modifier: Modifier = Modifier) {
             )
         }
     }
+}
+
+enum class IdentityFieldFontSize(val size: Int) {
+    LARGE(16),
+    SMALL(13),
+    EXTRA_SMALL(12)
 }
 
 @Composable
@@ -229,7 +247,6 @@ fun IdentityCardPreview() {
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
         placeOfBirth = "Strasbourg",
-        addressNumber = "123",
         address = "Main Street",
         postalCode = "75001",
         city = "Paris",
@@ -255,7 +272,6 @@ fun IdentityCardPreviewWithMissingData() {
         placeOfBirth = "",
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
-        addressNumber = "",  // Missing data
         address = "",  // Missing data
         postalCode = "",  // Missing data
         city = "Paris",

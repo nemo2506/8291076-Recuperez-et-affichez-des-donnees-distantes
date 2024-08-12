@@ -8,6 +8,8 @@ import com.jeremieguillot.identityreader.core.domain.MRZ
 import com.jeremieguillot.identityreader.core.domain.util.DataError
 import com.jeremieguillot.identityreader.core.domain.util.Error
 import com.jeremieguillot.identityreader.core.domain.util.Result
+import com.jeremieguillot.identityreader.core.extension.toSlashStringDate
+import net.sf.scuba.data.Gender
 import net.sf.scuba.smartcards.CardService
 import org.jmrtd.BACKey
 import org.jmrtd.BACKeySpec
@@ -15,6 +17,7 @@ import org.jmrtd.PassportService
 import org.jmrtd.lds.CardAccessFile
 import org.jmrtd.lds.PACEInfo
 import org.jmrtd.lds.icao.DG11File
+import org.jmrtd.lds.icao.DG12File
 import org.jmrtd.lds.icao.DG1File
 
 
@@ -56,6 +59,7 @@ class NFCDocument {
 
             val dg1File = DG1File(service.getInputStream(PassportService.EF_DG1))
             val dg11File = DG11File(service.getInputStream(PassportService.EF_DG11))
+            val dg12File = DG12File(service.getInputStream(PassportService.EF_DG12))
 
 
             return Result.Success(
@@ -64,17 +68,20 @@ class NFCDocument {
                     documentNumber = dg1File.mrzInfo.documentNumber,
                     firstName = dg1File.mrzInfo.primaryIdentifier,
                     lastName = dg1File.mrzInfo.secondaryIdentifier,
-                    gender = dg1File.mrzInfo.gender.toString(),
+                    gender = dg1File.mrzInfo.gender.toLetter(),
                     issuingIsO3Country = dg1File.mrzInfo.issuingState,
                     nationality = dg1File.mrzInfo.nationality,
-                    address = dg11File.permanentAddress.first(),
-                    addressNumber = "",
+                    address = dg11File.permanentAddress.first().trimStart(),
                     city = dg11File.permanentAddress[2],
                     postalCode = dg11File.permanentAddress[1],
                     country = dg11File.permanentAddress[4],
-                    placeOfBirth = ""
-//                birthDate = dg1File.mrzInfo.birthDate,
-//                expirationDate = dg1File.mrzInfo.expirationDate
+                    placeOfBirth = dg11File.placeOfBirth.joinToString { it },
+                    birthDate = dg1File.mrzInfo.dateOfBirth.toSlashStringDate(
+                        "yyMMdd",
+                        forceDateInPast = true
+                    ),
+                    expirationDate = dg1File.mrzInfo.dateOfExpiry.toSlashStringDate("yyMMdd"),
+                    deliveryDate = dg12File.dateOfIssue.toSlashStringDate("yyyyMMdd"),
                 )
             )
 
@@ -108,5 +115,14 @@ class NFCDocument {
 
     companion object {
         private const val TAG = "ReadTask"
+    }
+}
+
+
+fun Gender.toLetter(): String {
+    return when (this) {
+        Gender.MALE -> "M"
+        Gender.FEMALE -> "F"
+        else -> ""
     }
 }

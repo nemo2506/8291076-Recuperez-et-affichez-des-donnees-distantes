@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.CardDefaults
@@ -24,9 +26,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jeremieguillot.identityreader.core.domain.DocumentType
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
-import com.jeremieguillot.identityreader.core.domain.toHumanReadableHeight
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard.AddressField
 import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard.IdentityField
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.documentcard.identitycard.IdentityFieldFontSize
 
 @Composable
 fun PassportCard(
@@ -89,19 +91,25 @@ fun PassportCard(
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     // Name Row
-                    IdentityField("NOM", identityDocument.lastName.uppercase())
-                    IdentityField("Prénoms", identityDocument.firstName)
+                    IdentityField(
+                        "NOM",
+                        identityDocument.lastName.uppercase(),
+                        fontSize = IdentityFieldFontSize.LARGE
+                    )
+                    IdentityField(
+                        "Prénoms",
+                        identityDocument.firstName,
+                        fontSize = IdentityFieldFontSize.LARGE
+                    )
 
 
                     // Nationality, Gender, Birthdate Row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         IdentityField("NATIONALITÉ", identityDocument.nationality)
+                        Spacer(modifier = Modifier.width(16.dp))
                         IdentityField("SEXE", identityDocument.gender)
-                        IdentityField("TAILLE", identityDocument.size.toHumanReadableHeight())
-
                     }
 
                     Row(
@@ -131,7 +139,7 @@ fun PassportCard(
                         AddressField(
                             "DOMICILE",
                             listOf(
-                                "${identityDocument.addressNumber} ${identityDocument.address}",
+                                identityDocument.address,
                                 "${identityDocument.postalCode} ${identityDocument.city}",
                                 identityDocument.country
                             ),
@@ -159,7 +167,6 @@ fun IdentityCardPreview() {
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
         placeOfBirth = "Strasbourg",
-        addressNumber = "123",
         address = "Boulevard du General de Gaule",
         postalCode = "75001",
         city = "Saint Romain en Provence",
@@ -185,7 +192,6 @@ fun IdentityCardPreviewWithMissingData() {
         placeOfBirth = "",
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
-        addressNumber = "",  // Missing data
         address = "",  // Missing data
         postalCode = "",  // Missing data
         city = "Paris",

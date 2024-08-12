@@ -19,7 +19,6 @@ data class IdentityDocument(
     val birthDate: String = "",
     val placeOfBirth: String = "",
     val gender: String = "",
-    val addressNumber: String = "",
     val address: String = "",
     val postalCode: String = "",
     val city: String = "",
@@ -40,7 +39,6 @@ data class IdentityDocument(
                     ?.toLocaleDateStringSeparated() ?: "",
                 expirationDate = dataDocument.dateOfExpiry.fromYYMMDDtoDate()
                     ?.toLocaleDateStringSeparated() ?: "",
-                addressNumber = "",  // Missing data
                 address = "",  // Missing data
                 postalCode = "",  // Missing data
                 city = "",

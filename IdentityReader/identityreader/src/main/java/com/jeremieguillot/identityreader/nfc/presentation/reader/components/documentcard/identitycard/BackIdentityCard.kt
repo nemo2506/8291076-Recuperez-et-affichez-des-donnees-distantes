@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jeremieguillot.identityreader.core.domain.DocumentType
 import com.jeremieguillot.identityreader.core.domain.IdentityDocument
-import com.jeremieguillot.identityreader.core.domain.toHumanReadableHeight
 
 @Composable
 fun BackIdentityCard(
@@ -37,13 +36,12 @@ fun BackIdentityCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                IdentityField("TAILLE", identityDocument.size.toHumanReadableHeight())
                 IdentityField("DATE DE DELIVRANCE", identityDocument.deliveryDate)
             }
             AddressField(
                 "Adresse",
                 listOf(
-                    "${identityDocument.addressNumber} ${identityDocument.address}",
+                    identityDocument.address,
                     "${identityDocument.postalCode} ${identityDocument.city}",
                     identityDocument.country
                 )
@@ -63,13 +61,14 @@ fun AddressField(label: String, values: List<String>, modifier: Modifier = Modif
             ShimmerBox(50)
         } else {
             values.forEachIndexed { index, s ->
-                val textUnit = if (index + 1 == values.size) 12.sp else 14.sp
+                val size =
+                    if (index + 1 == values.size) IdentityFieldFontSize.EXTRA_SMALL.size else IdentityFieldFontSize.SMALL.size
                 Text(
-                    lineHeight = textUnit,
+                    lineHeight = size.sp,
                     text = s,
                     fontWeight = FontWeight.W500,
                     color = Color.Black,
-                    fontSize = textUnit
+                    fontSize = size.sp
                 )
             }
         }
@@ -100,7 +99,6 @@ fun BackCardPreview() {
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
         placeOfBirth = "Strasbourg",
-        addressNumber = "123",
         address = "Main Street",
         postalCode = "75001",
         city = "Paris",
@@ -126,7 +124,6 @@ fun BackCardPreviewWithMissingData() {
         placeOfBirth = "",
         birthDate = "03/04/1982",
         expirationDate = "23/12/2045",
-        addressNumber = "",  // Missing data
         address = "",  // Missing data
         postalCode = "",  // Missing data
         city = "Paris",

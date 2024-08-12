@@ -53,7 +53,8 @@ fun NfcReaderScreen(navController: NavHostController, dataDocument: DataDocument
 //    var localMRZ by remember { mutableStateOf(mrz) }
     val context = LocalContext.current
     val reader = remember { NFCReader(dataDocument) }
-    val identityDocument by remember { mutableStateOf(IdentityDocument.fromDataDocument(dataDocument)) }
+    val identityDocument =
+        remember { mutableStateOf(IdentityDocument.fromDataDocument(dataDocument)) }
     val status by reader.status.collectAsState(NfcReaderStatus.IDLE)
     var errorCounter by remember { mutableIntStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
@@ -70,9 +71,9 @@ fun NfcReaderScreen(navController: NavHostController, dataDocument: DataDocument
 //            })
 //    }
 //
-//    var identity by remember {
-//        mutableStateOf<IdentityDocument?>(null)
-//    }
+    var identity by remember {
+        mutableStateOf<IdentityDocument?>(null)
+    }
 //    if (identity != null) {
 //        BasicAlertDialog(onDismissRequest = { identity = null }) {
 //            Column(
@@ -112,14 +113,17 @@ fun NfcReaderScreen(navController: NavHostController, dataDocument: DataDocument
 //            val tag = intent.extras!!.getParcelable<Tag>(NfcAdapter.EXTRA_TAG)
             val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG)
             if (tag!!.techList.contains("android.nfc.tech.IsoDep")) {
-//                identity = when (val result = reader.onTagDiscovered(tag)) {
-//                    is Result.Error -> {
-//                        errorCounter++
-//                        null
-//                    }
-//
-//                    is Result.Success -> result.data
-//                }
+                identity = when (val result = reader.onTagDiscovered(tag)) {
+                    is com.jeremieguillot.identityreader.core.domain.util.Result.Error -> {
+                        errorCounter++
+                        null
+                    }
+
+                    is com.jeremieguillot.identityreader.core.domain.util.Result.Success -> {
+                        identityDocument.value = result.data
+                        result.data
+                    }
+                }
             } else {
                 Log.e("ERROR", "Error isoDep")
             }
@@ -154,7 +158,7 @@ fun NfcReaderScreen(navController: NavHostController, dataDocument: DataDocument
                 FlippableCard(
                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                     cardModifier = Modifier.padding(6.dp),
-                    identityDocument = identityDocument
+                    identityDocument = identityDocument.value
                 )
             }
 
