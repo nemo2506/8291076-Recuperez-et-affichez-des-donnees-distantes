@@ -172,7 +172,6 @@ class DocumentTypeIdentifier(private val fullRead: String) {
             documentNumber = documentNumber,
             checkDigit = cleanDigit(checkDigitDocumentNumber).toInt()
         )
-
         val resultDateOfBirth =
             when (val result = checkDocumentNumber(dateOfBirth, checkDigitDateOfBirth)) {
                 is Result.Error -> return MRZResult.Failure
@@ -208,15 +207,10 @@ class DocumentTypeIdentifier(private val fullRead: String) {
         checkDigit: String
     ): Result<String, DataError.Local> {
         if (checkDigit.isBlank()) return Result.Success(date)
-
-        val cleanDocumentNumber = cleanDocumentNumber(
+        return cleanDocumentNumber(
             date,
             cleanDigit(checkDigit).toInt()
         )
-        return when (cleanDocumentNumber) {
-            is Result.Error -> Result.Error(DataError.Local.INVALID_DATA)
-            is Result.Success -> cleanDocumentNumber
-        }
     }
 
     private fun cleanDocumentNumber(
