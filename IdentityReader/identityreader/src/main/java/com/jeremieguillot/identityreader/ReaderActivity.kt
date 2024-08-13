@@ -26,6 +26,8 @@ import com.jeremieguillot.identityreader.nfc.presentation.reader.NfcReaderScreen
 import com.jeremieguillot.identityreader.scan.presentation.ScanScreen
 import kotlin.reflect.typeOf
 
+const val ReaderResult = "identity_document"
+
 class ReaderActivity : ComponentActivity() {
 
     private var nfcAdapter: NfcAdapter? = null

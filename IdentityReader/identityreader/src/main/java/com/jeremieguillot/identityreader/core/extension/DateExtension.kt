@@ -37,7 +37,7 @@ fun String.fromDDMMYYYYtoDate(): Date {
     return sdf.parse(this) ?: Date()
 }
 
-fun String.toSlashStringDate(pattern: String, forceDateInPast: Boolean = false): String {
+fun String.toSlashStringDate(pattern: String = "yyMMdd", forceDateInPast: Boolean = false): String {
     try {
         val formatter = DateTimeFormatter.ofPattern(pattern)
         var parsedDate = LocalDate.parse(this, formatter)

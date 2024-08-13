@@ -89,12 +89,14 @@ fun FlippableCard(
             when (identityDocument.type) {
                 DocumentType.PASSPORT -> PassportCard(cardModifier, identityDocument)
                 DocumentType.ID_CARD -> FrontIdentityCard(cardModifier, identityDocument)
+                else -> {}
             }
         },
         back = {
             when (identityDocument.type) {
                 DocumentType.PASSPORT -> BackPassportCard(cardModifier)
                 DocumentType.ID_CARD -> BackIdentityCard(cardModifier, identityDocument)
+                else -> {}
             }
         },
     )

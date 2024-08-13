@@ -1,5 +1,8 @@
 package com.jeremieguillot.identityreader.scan.presentation
 
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
+import com.jeremieguillot.identityreader.ReaderActivity
+import com.jeremieguillot.identityreader.ReaderResult
+import com.jeremieguillot.identityreader.core.domain.DataDocument
+import com.jeremieguillot.identityreader.core.domain.DocumentType
+import com.jeremieguillot.identityreader.core.domain.IdentityDocument.Companion.fromDataDocument
 import com.jeremieguillot.identityreader.core.presentation.Destination
 import com.jeremieguillot.identityreader.scan.data.MRZRecognitionOCR
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Failure
@@ -44,13 +52,19 @@ fun ScanScreen(navController: NavHostController) {
     val context = LocalContext.current
     val analyzer = remember {
         TextImageAnalyzer(onSuccess = {
-
             when (val result = recognizer.recognize(it)) {
                 Failure -> {/*will retry automatically*/
                 }
 
                 is Success -> {
-                    navController.navigate(Destination.ReaderScreen(result.data))
+                    val type = result.data.type
+                    when (type) {
+                        DocumentType.PASSPORT, DocumentType.ID_CARD -> navController.navigate(
+                            Destination.ReaderScreen(result.data)
+                        )
+
+                        else -> returnIdentityDocumentResult(context, result.data)
+                    }
                 }
             }
         }
@@ -86,4 +100,13 @@ fun ScanScreen(navController: NavHostController) {
             )
         }
     }
+}
+
+
+fun returnIdentityDocumentResult(context: Context, data: DataDocument) {
+    val resultIntent = Intent().apply {
+        putExtra(ReaderResult, fromDataDocument(data))
+    }
+    (context as ReaderActivity).setResult(Activity.RESULT_OK, resultIntent)
+    context.finish()
 }

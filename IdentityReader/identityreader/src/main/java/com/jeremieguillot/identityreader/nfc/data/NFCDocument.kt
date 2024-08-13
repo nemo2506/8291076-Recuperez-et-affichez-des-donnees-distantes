@@ -19,6 +19,7 @@ import org.jmrtd.lds.PACEInfo
 import org.jmrtd.lds.icao.DG11File
 import org.jmrtd.lds.icao.DG12File
 import org.jmrtd.lds.icao.DG1File
+import java.io.IOException
 
 
 class NFCDocument {
@@ -35,6 +36,7 @@ class NFCDocument {
 
         try {
             isoDep.timeout = 15_000
+//            performBAC(isoDep, bacKey)
             val cardService = CardService.getInstance(isoDep).apply { open() }
             val service = PassportService(
                 /* service = */ cardService,
@@ -47,6 +49,7 @@ class NFCDocument {
                 /* shouldCheckMAC = */
                 false
             ).apply { open() }
+
 
 
             val paceSucceeded = doPace(service, bacKey)
@@ -76,12 +79,9 @@ class NFCDocument {
                     postalCode = dg11File.permanentAddress[1],
                     country = dg11File.permanentAddress[4],
                     placeOfBirth = dg11File.placeOfBirth.joinToString { it },
-                    birthDate = dg1File.mrzInfo.dateOfBirth.toSlashStringDate(
-                        "yyMMdd",
-                        forceDateInPast = true
-                    ),
-                    expirationDate = dg1File.mrzInfo.dateOfExpiry.toSlashStringDate("yyMMdd"),
-                    deliveryDate = dg12File.dateOfIssue.toSlashStringDate("yyyyMMdd"),
+                    birthDate = dg1File.mrzInfo.dateOfBirth.toSlashStringDate(forceDateInPast = true),
+                    expirationDate = dg1File.mrzInfo.dateOfExpiry.toSlashStringDate(),
+                    deliveryDate = dg12File.dateOfIssue.toSlashStringDate(pattern = "yyyyMMdd"),
                 )
             )
 
@@ -92,8 +92,10 @@ class NFCDocument {
     }
 
     private fun doPace(service: PassportService, bacKey: BACKeySpec): Boolean = runCatching {
+
         val inputStream = service.getInputStream(
-            PassportService.EF_CARD_SECURITY,
+//            0x3F00,
+            PassportService.EF_CARD_ACCESS,
             PassportService.DEFAULT_MAX_BLOCKSIZE
         )
         CardAccessFile(inputStream)
@@ -117,6 +119,63 @@ class NFCDocument {
         private const val TAG = "ReadTask"
     }
 }
+
+fun performBAC(isoDep: IsoDep, bacKey: BACKeySpec): Boolean {
+    try {
+        isoDep.connect()
+
+        // Step 1: GET CHALLENGE
+        val getChallengeCommand = byteArrayOf(0x00, 0x84.toByte(), 0x00, 0x00, 0x00)
+        val challengeResponse = isoDep.transceive(getChallengeCommand)
+
+        if (challengeResponse.isEmpty()) {
+            Log.e(TAG, "Failed to get challenge from the card")
+            return false
+        }
+
+        // Step 2: Compute challenge response
+        val computedResponse = computeChallengeResponse(challengeResponse, bacKey)
+
+        // Step 3: COMPUTE CHALLENGE
+        val computeChallengeCommand = byteArrayOf(
+            0x00, 0x82.toByte(), 0x00, 0x00, computedResponse.size.toByte()
+        ) + computedResponse
+
+        val computeResponse = isoDep.transceive(computeChallengeCommand)
+
+        // Check the response for success (implementation-specific)
+        val success = checkBACSuccess(computeResponse)
+        if (!success) {
+            Log.e(TAG, "BAC authentication failed")
+        }
+
+        return success
+
+    } catch (e: IOException) {
+        Log.e(TAG, "Error communicating with the card", e)
+        return false
+    } finally {
+        try {
+            isoDep.close()
+        } catch (e: IOException) {
+            Log.e(TAG, "Error closing ISO-DEP connection", e)
+        }
+    }
+}
+
+private fun computeChallengeResponse(challenge: ByteArray, bacKey: BACKeySpec): ByteArray {
+    // Implement the computation of the response using BAC key
+    // This typically involves cryptographic operations
+    // For simplicity, this is a placeholder
+    return ByteArray(0) // Replace with actual computation
+}
+
+private fun checkBACSuccess(response: ByteArray): Boolean {
+    // Implement checking of the BAC response
+    // This typically involves checking the response status word or data
+    return true // Replace with actual check
+}
+
 
 
 fun Gender.toLetter(): String {

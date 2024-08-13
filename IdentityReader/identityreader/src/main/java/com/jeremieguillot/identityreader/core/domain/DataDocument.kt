@@ -14,5 +14,7 @@ data class DataDocument(
     val nationality: String,
     val dateOfBirth: String,
     val dateOfExpiry: String,
-    val sex: String
+    val sex: String,
+    val firstName: String = "",
+    val deliveryDate: String = "",
 ) : Parcelable

@@ -76,6 +76,8 @@ class MRZRecognitionOCR {
     private val DIGIT_DOCUMENT_NUMBER = "checkDigitDocumentNumber"
     private val BIRTH_DATE = "dateOfBirth"
     private val CHECK_BIRTH_DATE = "checkDigitDateOfBirth"
+    private val ISSUE_DATE = "issueDate"
+    private val DIGIT_ISSUE_DATE = "checkIssueDate"
     private val EXPIRATION_DATE = "expirationDate"
     private val CHECK_EXPIRATION_DATE = "checkDigitExpirationDate"
     private val SEX = "sex"
@@ -84,6 +86,9 @@ class MRZRecognitionOCR {
     private val PERSONAL_IDENTIFIER = "personalIdentifier"
     private val LAST_NAME = "lastName"
     private val FIRST_NAME = "firstName" //not used on purpose,impossible to get full first name
+
+    private val INTERNAL_CODE_1 = "ee"
+    private val CHECK_DIGIT_3 = "dd"
 
     private val REGEX_PASSPORT_FIRST_LINE =
         "P<(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$LAST_NAME>[A-Z]{2,})<<([A-Z]+)"
@@ -94,8 +99,27 @@ class MRZRecognitionOCR {
         "ID(?<$ISSUING_COUNTRY>[A-Z<]{3})(?<$DOCUMENT_NUMBER>[A-Z0-9<]{9})(?<$DIGIT_DOCUMENT_NUMBER>[0-9]{1})"
     private val REGEX_NEW_CARD_LINE_2 =
         "(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9]{1})(?<$SEX>[FM]{1})(?<$EXPIRATION_DATE>[0-9]{6})(?<$CHECK_EXPIRATION_DATE>[0-9]{1})(?<$NATIONALITY>[A-Z<]{3})"
-
     private val REGEX_NEW_CARD_LINE_3 = "(?<$LAST_NAME>[A-Z]{2,})<<([A-Z]+)"
+
+    //    private val REGEX_OLD_FRENCH_CARD_ID =
+    //            "(?<ID>[A-Z]{2})(?<$ISSUING_COUNTRY>[A-Z]{3})(?<$LAST_NAME>[A-Z<]{25})(?<$INTERNAL_CODE>[A-Z0-9]{6})(?<$ISSUE_DATE>[0-9]{4})(?<$DIGIT_ISSUE_DATE>[A-Z0-9]{3})(?<$DOCUMENT_NUMBER>[0-9]{5})(?<$DIGIT_DOCUMENT_NUMBER>[0-9])(?<$FIRST_NAME>[A-Z<]{14})(?<$BIRTH_DATE>[0-9]{6})(?<$CHECK_BIRTH_DATE>[0-9])(?<$SEX>[FM])(?<$CHECK_DIGIT_3>[0-9])"                          // Character 36: Final check digit
+    //
+    private val REGEX_OLD_FRENCH_CARD_ID =
+        "ID" +                                 // Characters 1–2: Letters (ID)
+                "(?<$ISSUING_COUNTRY>[A-Z]{3})" +                           // Characters 3–5: ISO country code
+                "(?<$LAST_NAME>[A-Z]{2,})<"// +                          // Characters 6–30: Surname
+
+    //                    "(?<$INTERNAL_CODE_1>[A-Z0-9]{6})" +                 // Characters 31–36: Internal code
+    private val REGEX_OLD_FRENCH_CARD_ID_2 =
+        "(?<$ISSUE_DATE>[0-9]{4})" +                         // Characters 1–4: Issue date
+                "(?<$DOCUMENT_NUMBER>[0-9]{8})" +                      // Characters 8–12: Serial number
+                "(?<$DIGIT_DOCUMENT_NUMBER>[0-9])" +                         // Character 13: Check digit
+                "(?<$FIRST_NAME>[A-Z]{2,})<<[A-Z0-9]{2,}" +                // Characters 14–27: First and second names
+                "<(?<$BIRTH_DATE>[0-9]{6})" +                         // Characters 28–33: Birth date
+                "(?<$CHECK_BIRTH_DATE>[0-9])" +                         // Character 34: Check digit for birth date
+                "(?<$SEX>[FM])" //+                                    // Character 35: Sex
+//                    "(?<$CHECK_DIGIT_3>[0-9])"                           // Character 36: Final check digit
+
 
     //to here
 
@@ -117,6 +141,9 @@ class MRZRecognitionOCR {
         val newIdentityCard2 = Pattern.compile(REGEX_NEW_CARD_LINE_2).matcher(fullRead)
         val newIdentityCard3 = Pattern.compile(REGEX_NEW_CARD_LINE_3).matcher(fullRead)
 
+        val oldIdCard = Pattern.compile(REGEX_OLD_FRENCH_CARD_ID).matcher(fullRead)
+        val oldIdCard2 = Pattern.compile(REGEX_OLD_FRENCH_CARD_ID_2).matcher(fullRead)
+
         return when {
             newIdentityCard.find() && newIdentityCard2.find() && newIdentityCard3.find() -> processIdentityCard(
                 newIdentityCard,
@@ -128,8 +155,26 @@ class MRZRecognitionOCR {
                 firstLinePassportMatcher,
                 oldPassportMatcher
             )
+
+            oldIdCard.find() && oldIdCard2.find() -> processOldIdentityCard(oldIdCard, oldIdCard2)
             else -> MRZResult.Failure
         }
+    }
+
+    private fun processOldIdentityCard(matcher: Matcher, matcher2: Matcher): MRZResult {
+        return processDocument(
+            type = DocumentType.OLD_ID_CARD,
+            issuingCountry = matcher.group(ISSUING_COUNTRY),
+            documentNumber = matcher2.group(ISSUE_DATE) + matcher2.group(DOCUMENT_NUMBER),
+            checkDigitDocumentNumber = matcher2.group(DIGIT_DOCUMENT_NUMBER),
+            dateOfBirth = matcher2.group(BIRTH_DATE),
+            sex = matcher2.group(SEX),
+            nationality = "FRA", //hard coded because only working with France
+            lastName = matcher.group(LAST_NAME),
+            expirationDate = "",
+            firstName = matcher2.group(FIRST_NAME),
+            deliveryDate = matcher2.group(ISSUE_DATE) + "01" //date only contains month and year, adding first day of month
+        )
     }
 
     private fun processPassport(matcher1: Matcher, matcher2: Matcher): MRZResult {
@@ -173,7 +218,9 @@ class MRZRecognitionOCR {
         dateOfBirth: String,
         nationality: String,
         sex: String,
-        expirationDate: String
+        expirationDate: String,
+        firstName: String = "",
+        deliveryDate: String = "",
     ): MRZResult {
         val result = cleanDocumentNumber(
             documentNumber = documentNumber,
@@ -191,7 +238,9 @@ class MRZRecognitionOCR {
                     lastName = cleanCharacter(lastName),
                     dateOfBirth = cleanDigit(dateOfBirth),
                     dateOfExpiry = cleanDigit(expirationDate),
-                    sex = sex
+                    sex = sex,
+                    firstName = firstName,
+                    deliveryDate = deliveryDate
                 )
             )
         }
@@ -272,7 +321,6 @@ class MRZRecognitionOCR {
      * This check digit is then placed at the next position of the passport number in the Machine Readable Zone (MRZ) to verify the integrity of the data during machine reading.
      */
     private fun checkDigit(documentNumber: String): Int {
-        require(documentNumber.length == 9) { "Document number must be 9 characters long" }
 
         val weights = intArrayOf(7, 3, 1)
         var sum = 0
