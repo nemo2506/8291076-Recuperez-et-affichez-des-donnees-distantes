@@ -26,7 +26,7 @@ data class IdentityDocument(
     val country: String = "",
 ) : Parcelable {
     companion object {
-        fun fromDataDocument(dataDocument: DataDocument): IdentityDocument {
+        fun toIdentityDocument(dataDocument: DataDocument): IdentityDocument {
             return IdentityDocument(
                 type = dataDocument.type,
                 documentNumber = dataDocument.documentNumber,

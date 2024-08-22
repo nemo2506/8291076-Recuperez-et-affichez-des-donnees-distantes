@@ -84,7 +84,9 @@ fun FlippableCard(
     FlipCard(
         modifier = modifier,
         cardFace = cardFace,
-        onClick = { cardFace = cardFace.next },
+        onClick = {
+//            cardFace = cardFace.next
+        },
         front = {
             when (identityDocument.type) {
                 DocumentType.PASSPORT -> PassportCard(cardModifier, identityDocument)

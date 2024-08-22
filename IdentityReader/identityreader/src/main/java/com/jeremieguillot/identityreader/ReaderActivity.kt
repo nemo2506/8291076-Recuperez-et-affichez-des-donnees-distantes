@@ -60,7 +60,7 @@ class ReaderActivity : ComponentActivity() {
                         )
                     ) {
                         val args = it.toRoute<Destination.ReaderScreen>()
-                        NfcReaderScreen(navController, args.dataDocument)
+                        NfcReaderScreen(args.dataDocument)
                     }
                 }
             }

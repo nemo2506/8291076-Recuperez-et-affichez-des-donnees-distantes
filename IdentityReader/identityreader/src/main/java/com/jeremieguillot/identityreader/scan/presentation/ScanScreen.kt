@@ -9,47 +9,49 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.jeremieguillot.identityreader.ReaderActivity
 import com.jeremieguillot.identityreader.ReaderResult
-import com.jeremieguillot.identityreader.core.domain.DataDocument
 import com.jeremieguillot.identityreader.core.domain.DocumentType
-import com.jeremieguillot.identityreader.core.domain.IdentityDocument.Companion.fromDataDocument
+import com.jeremieguillot.identityreader.core.domain.IdentityDocument
+import com.jeremieguillot.identityreader.core.domain.IdentityDocument.Companion.toIdentityDocument
 import com.jeremieguillot.identityreader.core.presentation.Destination
+import com.jeremieguillot.identityreader.nfc.presentation.reader.components.ExpirationDialog
 import com.jeremieguillot.identityreader.scan.data.MRZRecognitionOCR
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Failure
 import com.jeremieguillot.identityreader.scan.data.MRZResult.Success
 import com.jeremieguillot.identityreader.scan.data.TextImageAnalyzer
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 @Composable
 fun ScanScreen(navController: NavHostController) {
 
-//    var fabVisible by remember { mutableStateOf(false) }
-//    var showDialog by remember { mutableStateOf(false) }
-//
-//    if (showDialog) {
-//        ModifyMRZDialog(
-//            mrz = MRZ.EMPTY,
-//            onDismiss = { showDialog = false },
-//            onSave = { documentNumber, dateOfBirth, dateOfExpiry ->
-//                val dateOfBirth1 = dateOfBirth.toMRZFormat()
-//                val mrz = MRZ(documentNumber, dateOfBirth1, dateOfExpiry.toMRZFormat())
-//                navController.navigate(Destination.ReaderScreen(mrz))
-//            })
-//    }
-
-//    LaunchedEffect(Unit) {
-//        delay(5000)
-//        fabVisible = true
-//    }
-
-
     val recognizer = remember { MRZRecognitionOCR() }
     val context = LocalContext.current
+    var identity by remember { mutableStateOf<IdentityDocument?>(null) }
+
+    var showExpirationDialog by remember { mutableStateOf(false) }
+
+    ExpirationDialog(
+        showDialog = showExpirationDialog,
+        onDismiss = {
+            showExpirationDialog = false
+            (context as ReaderActivity).finish()
+        },
+        onConfirm = {
+            returnIdentityDocumentResult(context, identity!!)
+        }
+    )
+
     val analyzer = remember {
         TextImageAnalyzer(onSuccess = {
             when (val result = recognizer.recognize(it)) {
@@ -59,11 +61,18 @@ fun ScanScreen(navController: NavHostController) {
                 is Success -> {
                     val type = result.data.type
                     when (type) {
-                        DocumentType.PASSPORT, DocumentType.ID_CARD -> navController.navigate(
+                        DocumentType.PASSPORT -> navController.navigate( ///todo add DocumentType.ID_CARD when France Connect reply, NFC new card working
                             Destination.ReaderScreen(result.data)
                         )
 
-                        else -> returnIdentityDocumentResult(context, result.data)
+                        else -> {
+                            identity = toIdentityDocument(result.data)
+                            processDocument(
+                                context = context,
+                                identity = identity,
+                                showDialog = { showExpirationDialog = true }
+                            )
+                        }
                     }
                 }
             }
@@ -81,15 +90,7 @@ fun ScanScreen(navController: NavHostController) {
         }
     }
 
-    Scaffold(floatingActionButton = {
-//        if (fabVisible) {
-//            FloatingActionButton(
-//                onClick = { showDialog = true },
-//            ) {
-//                Icon(Icons.Filled.Edit, null)
-//            }
-//        }
-    }) { padding ->
+    Scaffold { padding ->
         OverlayScreen(
             Modifier
                 .fillMaxSize()
@@ -102,10 +103,36 @@ fun ScanScreen(navController: NavHostController) {
     }
 }
 
+fun processDocument(
+    context: Context,
+    identity: IdentityDocument?,
+    showDialog: () -> Unit
+) {
+    identity?.let { document ->
+        if (expirationDateIsInThePast(document.expirationDate)) {
+            showDialog()
+        } else {
+            returnIdentityDocumentResult(context, document)
+        }
+    }
+}
 
-fun returnIdentityDocumentResult(context: Context, data: DataDocument) {
+
+fun expirationDateIsInThePast(expirationDate: String): Boolean {
+    if (expirationDate.isBlank()) return true
+    return try {
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+        val expiration = LocalDate.parse(expirationDate, formatter)
+        expiration.isBefore(LocalDate.now())
+    } catch (e: DateTimeParseException) {
+        throw IllegalArgumentException("Invalid date format. Please use 'dd/MM/yyyy'.")
+    }
+}
+
+
+fun returnIdentityDocumentResult(context: Context, doc: IdentityDocument) {
     val resultIntent = Intent().apply {
-        putExtra(ReaderResult, fromDataDocument(data))
+        putExtra(ReaderResult, doc)
     }
     (context as ReaderActivity).setResult(Activity.RESULT_OK, resultIntent)
     context.finish()

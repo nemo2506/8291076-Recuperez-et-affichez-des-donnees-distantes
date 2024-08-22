@@ -26,4 +26,9 @@
     <string name="document_number_dots">"Numéro de Document: "</string>
     <string name="birthdate_dots">"Date de Naissance: "</string>
     <string name="expiration_date_dots">"Date d'Expiration: "</string>
+    <string name="expired_document_desc">Les informations pourraient être inexactes. Souhaitez-vous tout de même utiliser ces données ?</string>
+    <string name="expired_document_title">Document Expiré</string>
+    <string name="ok">OK</string>
+    <string name="no">Non</string>
+    <string name="yes">Oui</string>
 </resources>
