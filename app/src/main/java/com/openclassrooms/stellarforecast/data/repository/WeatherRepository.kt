@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.flow
 
 
 class WeatherRepository(private val dataService: WeatherClient) {
-    private val API_KEY = "617aafb37c40e369ec5a9d14ca06b4c5"
+    private val API_KEY = "30e9d0b7be54cf1b79271c3813510c1c"
 
 
     fun fetchForecastData(lat: Double, lng: Double): Flow<Result<List<WeatherReportModel>>> =
